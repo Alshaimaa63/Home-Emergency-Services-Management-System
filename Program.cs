@@ -5,13 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Connection String
+// 1. Database Connection Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 2. Identity Services
+// 2. Identity Services Configuration
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+    // Identity password requirements (Adjusted for easier testing during development)
     options.Password.RequiredLength = 4;
     options.Password.RequireDigit = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -21,12 +22,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// 3. MVC & Razor Pages
+// 3. MVC & Razor Pages Services
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); // مهمة جداً
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -41,27 +43,44 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 4. الترتيب الصحيح للميدل وير
-app.UseAuthentication(); // لازم قبل الـ Authorization
+// 4. Middleware Pipeline Order
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapRazorPages(); // مهمة جداً
+app.MapRazorPages();
 
-// 5. الـ Seeding للكاشات (اختياري حسب كودك)
+// 5. Automatic Database Creation & English Seed Data
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (!context.Categories.Any())
+    var services = scope.ServiceProvider;
+    try
     {
-        context.Categories.AddRange(
-            new Category { Name = "السباكة", Description = "خدمات تصليح السباكة" },
-            new Category { Name = "الكهرباء", Description = "خدمات الكهرباء المنزلية" }
-        );
-        context.SaveChanges();
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // Ensures the database is created based on the current context
+        context.Database.EnsureCreated();
+
+        // Seeding initial categories if the table is empty
+        if (!context.Categories.Any())
+        {
+            context.Categories.AddRange(
+                new Category { Name = "Electricity", Description = "Electrical maintenance, wiring, and repair services" },
+                new Category { Name = "Plumbing", Description = "Water leaks repair, pipe installation, and sanitary works" },
+                new Category { Name = "Cleaning", Description = "Full home cleaning, carpet washing, and sanitation" },
+                new Category { Name = "Painting", Description = "Professional interior/exterior painting and wall decoration" }
+            );
+            context.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log errors if database seeding fails
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
 
