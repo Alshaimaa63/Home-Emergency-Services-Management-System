@@ -45,7 +45,7 @@ namespace HomeServices.Models
         public string? ProviderId { get; set; }
 
         [ForeignKey("ProviderId")]
-        public virtual ApplicationUser Provider { get; set; }
+        public virtual ApplicationUser? Provider { get; set; }
 
         [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;

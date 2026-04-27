@@ -1,0 +1,35 @@
+﻿@model HomeServices.Models.Request
+
+<div class="container mt-4">
+    <h2>Request Details</h2>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">Service Type</dt>
+        <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9"><span class="badge bg-info">@Model.Status</span></dd>
+
+        <dt class="col-sm-3">Preferred Schedule</dt>
+        <dd class="col-sm-9">@Model.PreferredSchedule.ToString("f")</dd>
+
+        <dt class="col-sm-3">Provider Name</dt>
+        <dd class="col-sm-9">@(Model.Provider?.UserName ?? "Not Assigned Yet")</dd>
+    </dl>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
+<div class="mt-3">
+    @if (Model.Status == "Pending")
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Request</a>
+
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this request?');">
+            <button type="submit" class="btn btn-danger">Cancel Request</button>
+        </form>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary">Back to My List</a>
+</div>
