@@ -1,1 +1,38 @@
-﻿<h1>Welcome to Provider Dashboard</h1>
+﻿@model IEnumerable<HomeServices.Models.Request>
+
+<div class="container mt-4">
+    <h2 class="mb-4">My Service History</h2>
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Request ID</th>
+                <th>Service Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>#@item.Id</td>
+                    <td>@item.Category?.Name</td>
+                    <td>
+                        <span class="badge @(item.Status == "Completed" ? "bg-secondary" : "bg-warning text-dark")">
+                            @item.Status
+                        </span>
+                    </td>
+                    <td>
+                        @if (item.Status == "Accepted")
+                        {
+                            <form asp-action="CompleteRequest" method="post">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-primary btn-sm">Mark as Completed</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
