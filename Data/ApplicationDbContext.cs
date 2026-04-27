@@ -6,10 +6,7 @@ namespace HomeServices.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Request> Requests { get; set; }
@@ -18,7 +15,6 @@ namespace HomeServices.Data
         {
             base.OnModelCreating(builder);
 
-            // تخصيص العلاقات لمنع التداخل (Cascading)
             builder.Entity<Request>()
                 .HasOne(r => r.Customer)
                 .WithMany(u => u.CustomerRequests)

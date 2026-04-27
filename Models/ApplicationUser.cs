@@ -13,7 +13,7 @@ namespace HomeServices.Models
 
         [Required(ErrorMessage = "العنوان مطلوب")]
         [StringLength(200)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
