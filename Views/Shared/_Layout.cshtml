@@ -22,15 +22,33 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Requests" asp-action="Index">My Requests</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Provider" asp-action="Dashboard">Provider Dashboard</a>
-                        </li>
+
+                        @* روابط العميل - تظهر فقط إذا كان المستخدم Customer *@
+                        @if (User.IsInRole("Customer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Requests" asp-action="Index">My Requests</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Requests" asp-action="Create">New Request</a>
+                            </li>
+                        }
+
+                        @* روابط مقدم الخدمة - تظهر فقط إذا كان المستخدم Provider *@
+                        @if (User.IsInRole("Provider"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Provider" asp-action="Dashboard">Provider Dashboard</a>
+                            </li>
+                        }
+
+                        @* روابط الأدمن - تظهر فقط إذا كان المستخدم Admin *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

@@ -16,8 +16,8 @@
         <dt class="col-sm-3">Preferred Schedule</dt>
         <dd class="col-sm-9">@Model.PreferredSchedule.ToString("f")</dd>
 
-        <dt class="col-sm-3">Provider Name</dt>
-        <dd class="col-sm-9">@(Model.Provider?.UserName ?? "Not Assigned Yet")</dd>
+        <dt class="col-sm-3">Service Provider</dt>
+        <dd class="col-sm-9">@(Model.Provider?.FullName ?? "Not Assigned Yet")</dd>
     </dl>
     <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

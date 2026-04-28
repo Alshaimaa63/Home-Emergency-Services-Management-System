@@ -33,7 +33,7 @@
                             @item.Status
                         </span>
                     </td>
-                    <td>@(item.Provider?.UserName ?? "Searching...")</td>
+                    <td>@(item.Provider?.FullName ?? "Searching...")</td>
                     <td>
                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Details</a>
                     </td>

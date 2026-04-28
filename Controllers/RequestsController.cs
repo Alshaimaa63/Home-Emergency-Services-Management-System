@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Customer")] // كده العميل فقط هو اللي يقدر يفتح الكنترولر ده
     public class RequestsController : Controller
     {
         private readonly ApplicationDbContext _context;
