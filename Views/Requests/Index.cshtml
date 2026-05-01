@@ -1,44 +1,118 @@
 ﻿@model IEnumerable<HomeServices.Models.Request>
-
 @{
-    ViewData["Title"] = "My Requests";
+    ViewData["Title"] = "Service History";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>My Service Requests</h2>
-        <a asp-action="Create" class="btn btn-success">Request New Service</a>
-    </div>
+<link rel="stylesheet" href="~/css/history.css" />
 
-    <table class="table table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Service</th>
-                <th>Description</th>
-                <th>Schedule</th>
-                <th>Status</th>
-                <th>Provider</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
+<div class="history-bg">
+    <div class="container">
+        <!-- Page Header - Minimalist Version -->
+        <div class="mb-5 text-start">
+            <h1 class="fw-bold mb-1" style="color: #1a237e;">Service History</h1>
+            <p class="text-muted">Review your past maintenance records and track ongoing services.</p>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between mb-2">
+                        <i class="fas fa-check-circle text-success fs-4"></i>
+                        <span class="text-success small fw-bold">+@ViewBag.CompletedCount this month</span>
+                    </div>
+                    <div class="stat-val">@ViewBag.CompletedCount.ToString("00")</div>
+                    <div class="text-muted small fw-bold text-uppercase">Completed Jobs</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between mb-2">
+                        <i class="fas fa-tasks text-primary fs-4"></i>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill">Active</span>
+                    </div>
+                    <div class="stat-val">@ViewBag.InProgressCount.ToString("00")</div>
+                    <div class="text-muted small fw-bold text-uppercase">In Progress</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="investment-card">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-uppercase small fw-bold opacity-75 mb-1">Total Investment</p>
+                            <h2 class="fw-bold display-6 mb-3">$12,480.00</h2>
+                            <p class="small mb-0"><i class="fas fa-user-shield me-2"></i>Trusted by Master Pros</p>
+                        </div>
+                        <i class="fas fa-wallet fa-4x opacity-25"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="custom-table-container">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Service Provider</th>
+                        <th>Date</th>
+                        <th>Service Type</th>
+                        <th>Status</th>
+                        <th>Cost</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px;">
+                                        <i class="fas fa-user-tie text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">@(item.Provider?.FullName ?? "Assigning Provider...")</div>
+                                        <div class="text-muted small">Specialist</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">@item.Category.Name</span>
+                            </td>
+                            <td>
+                                <div class="badge-ui status-@item.Status.ToLower().Replace(" ", "")">
+                                    <span class="status-dot"></span> @item.Status
+                                </div>
+                            </td>
+                            <td class="fw-bold" style="color: #1a237e;">--</td>
+                            <td class="text-end pe-4">
+                                <div class="dropdown">
+                                    <button class="btn btn-action" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                        <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="far fa-eye me-2"></i>Details</a></li>
+                                        @if (item.Status == "Pending")
+                                        {
+                                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="far fa-edit me-2"></i>Edit</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" asp-action="Cancel" asp-route-id="@item.Id"><i class="far fa-times-circle me-2"></i>Cancel Request</a></li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Any())
             {
-                <tr>
-                    <td>@item.Category.Name</td>
-                    <td>@item.Description</td>
-                    <td>@item.PreferredSchedule.ToString("g")</td>
-                    <td>
-                        <span class="badge @(item.Status == "Pending" ? "bg-warning" : "bg-info")">
-                            @item.Status
-                        </span>
-                    </td>
-                    <td>@(item.Provider?.FullName ?? "Searching...")</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Details</a>
-                    </td>
-                </tr>
+                <div class="text-center py-5">
+                    <p class="text-muted">You haven't made any requests yet.</p>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 </div>

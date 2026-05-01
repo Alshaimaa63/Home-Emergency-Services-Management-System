@@ -1,5 +1,5 @@
 ﻿using HomeServices.Models;
-using HomeServices.ViewModels;
+using HomeServices.ViewModels; // Matches your root-level folder
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +12,8 @@ namespace HomeServices.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager,
-                                 SignInManager<ApplicationUser> signInManager,
+        public AccountController(UserManager<ApplicationUser> userManager ,
+                                 SignInManager<ApplicationUser> signInManager ,
                                  RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
@@ -25,64 +25,57 @@ namespace HomeServices.Controllers
         public IActionResult Register() => View();
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> Register(RegisterVM model)
         {
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FullName = model.FullName,
-                    Address = model.Address,
-                    PhoneNumber = model.PhoneNumber,
+                    UserName = model.Email ,
+                    Email = model.Email ,
+                    FullName = model.FullName ,
+                    Address = model.Address ,
+                    PhoneNumber = model.PhoneNumber ,
                     CreatedAt = DateTime.Now
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user , model.Password);
 
                 if (result.Succeeded)
                 {
                     if (!await _roleManager.RoleExistsAsync(model.Role))
                         await _roleManager.CreateAsync(new IdentityRole(model.Role));
 
-                    await _userManager.AddToRoleAsync(user, model.Role);
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    await _userManager.AddToRoleAsync(user , model.Role);
+                    await _signInManager.SignInAsync(user , isPersistent: false);
+                    return RedirectToAction("Index" , "Home");
                 }
-                foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
+                foreach (var error in result.Errors) ModelState.AddModelError("" , error.Description);
             }
             return View(model);
         }
 
-        // 1. This one opens the page (GET)
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // 2. This one handles the form submission (POST)
         [HttpPost]
-        [ValidateAntiForgeryToken] // For security
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
             if (ModelState.IsValid)
             {
-                // Notice: We use PasswordSignInAsync directly
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email , model.Password , model.RememberMe , lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index" , "Home");
                 }
 
-                // If login fails, add an error message
-                ModelState.AddModelError(string.Empty, "Invalid login attempt. Check your email or password.");
+                ModelState.AddModelError(string.Empty , "Invalid login attempt. Check your email or password.");
             }
-
-            // If we are here, something failed, redisplay form
             return View(model);
         }
 
@@ -90,24 +83,19 @@ namespace HomeServices.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index" , "Home");
         }
 
         [Authorize]
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login");
-            }
+            if (user == null) return RedirectToAction("Login");
 
             var roles = await _userManager.GetRolesAsync(user);
             ViewBag.UserRole = roles.FirstOrDefault();
 
             return View(user);
         }
-
     }
 }
-

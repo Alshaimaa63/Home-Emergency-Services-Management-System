@@ -23,13 +23,17 @@ namespace HomeServices.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var myRequests = _context.Requests
+            var myRequests = await _context.Requests
                 .Include(r => r.Category)
                 .Include(r => r.Provider)
                 .Where(r => r.CustomerId == userId)
-                .OrderByDescending(r => r.CreatedAt);
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
-            return View(await myRequests.ToListAsync());
+            ViewBag.CompletedCount = myRequests.Count(r => r.Status == "Completed");
+            ViewBag.InProgressCount = myRequests.Count(r => r.Status == "Pending" || r.Status == "In Progress");
+
+            return View(myRequests);
         }
 
         public IActionResult Create()

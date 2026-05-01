@@ -3,51 +3,29 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - HomeServices</title>
+    <title>@ViewData["Title"] - ServicePro</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/HomeServices.styles.css" asp-append-version="true" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .navbar { background: #fff !important; border-bottom: 1px solid #eee; }
+        .navbar-brand { font-weight: 800; color: #1a237e !important; }
+        .nav-link { font-weight: 600; color: #1a1a1a !important; margin: 0 10px; }
+        .nav-link:hover { color: #00bcd4 !important; }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">HomeServices</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+        <nav class="navbar navbar-expand-sm navbar-light sticky-top">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">SericePro</a>
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-
-                        @* روابط العميل - تظهر فقط إذا كان المستخدم Customer *@
-                        @if (User.IsInRole("Customer"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Requests" asp-action="Index">My Requests</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Requests" asp-action="Create">New Request</a>
-                            </li>
-                        }
-
-                        @* روابط مقدم الخدمة - تظهر فقط إذا كان المستخدم Provider *@
-                        @if (User.IsInRole("Provider"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Provider" asp-action="Dashboard">Provider Dashboard</a>
-                            </li>
-                        }
-
-                        @* روابط الأدمن - تظهر فقط إذا كان المستخدم Admin *@
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
-                            </li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        @if (User.IsInRole("Customer")) {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Requests" asp-action="Index">History</a></li>
                         }
                     </ul>
                     <partial name="_LoginPartial" />
@@ -55,20 +33,14 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - HomeServices - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main role="main">@RenderBody()</main>
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0 small">&copy; 2026 ServicePro - Premium Home Care.</p>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

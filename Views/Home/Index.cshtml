@@ -1,8 +1,120 @@
-﻿@{
+﻿@model IEnumerable<HomeServices.Models.Category>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link rel="stylesheet" href="~/css/home.css" />
+
+<!-- Hero Section -->
+<section class="hero-section animate__animated animate__fadeIn">
+    <div class="container">
+        <h1 class="hero-title animate__animated animate__zoomIn">Your Home, Mastered</h1>
+        <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">
+            Connect with the finest local artisans and service professionals who treat your home with the mastery it deserves.
+        </p>
+        
+        <!-- Search Bar Form -->
+        <form asp-controller="Home" asp-action="Index" method="get">
+            <div class="search-bar-container animate__animated animate__fadeInUp animate__delay-1s">
+                <input type="text" name="searchString" value="@ViewData["SearchQuery"]" placeholder="Search for services (e.g. plumbing, cleaning)...">
+                <button type="submit" class="btn-find">Find Artisan</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Results Section -->
+<div class="container my-5">
+    
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <!-- Error Message if service doesn't exist -->
+        <div class="alert alert-warning animate__animated animate__shakeX" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.ErrorMessage
+            <br />
+            <a asp-action="Index" class="alert-link">Show all services</a>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ViewData["SearchQuery"]?.ToString()))
+    {
+        <h3 class="mb-4">Results for "@ViewData["SearchQuery"]"</h3>
+    }
+
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            string imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
+
+            if (item.Name.Contains("Plumbing")) 
+                imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
+            else if (item.Name.Contains("Electricity")) 
+                imageUrl = "https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=800&auto=format&fit=crop";
+            else if (item.Name.Contains("Cleaning")) 
+                imageUrl = "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=800&auto=format&fit=crop";
+            else if (item.Name.Contains("Painting")) 
+                imageUrl = "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=800&auto=format&fit=crop";
+
+            <div class="col-md-4 scroll-reveal">
+                <div class="service-card" onclick="location.href='@Url.Action("Create", "Requests", new { categoryId = item.Id })'">
+                    <img src="@imageUrl" alt="@item.Name">
+                    <div class="service-card-overlay">
+                        <small class="text-uppercase fw-bold text-info">Service</small>
+                        <h4 class="fw-bold">@item.Name</h4>
+                        <p class="small mb-0">@item.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
+
+<!-- Features Section (Rest of the code remains the same) -->
+<section class="py-5 bg-white">
+    <div class="container text-center">
+        <h2 class="mb-5 fw-bold" style="color: #1a237e;">Crafted for Quality</h2>
+        <div class="row g-4">
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box bg-light">
+                    <div class="icon-circle mx-auto mb-3" style="width:60px; height:60px; background:#1a237e; color:white; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <h5 class="fw-bold">Vetted Artisans</h5>
+                    <p class="text-muted small">Every professional undergoes a rigorous background check.</p>
+                </div>
+            </div>
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box bg-light">
+                    <div class="icon-circle mx-auto mb-3" style="width:60px; height:60px; background:#1a237e; color:white; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5 class="fw-bold">Precision Scheduling</h5>
+                    <p class="text-muted small">Book with exact time windows that respect your lifestyle.</p>
+                </div>
+            </div>
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box bg-light">
+                    <div class="icon-circle mx-auto mb-3" style="width:60px; height:60px; background:#1a237e; color:white; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5 class="fw-bold">Craft Guarantee</h5>
+                    <p class="text-muted small">Comprehensive quality and safety protection on every job.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+    </script>
+}
