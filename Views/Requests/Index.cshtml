@@ -7,7 +7,7 @@
 
 <div class="history-bg">
     <div class="container">
-        <!-- Page Header - Minimalist Version -->
+        <!-- Page Header -->
         <div class="mb-5 text-start">
             <h1 class="fw-bold mb-1" style="color: #1a237e;">Service History</h1>
             <p class="text-muted">Review your past maintenance records and track ongoing services.</p>
@@ -87,18 +87,31 @@
                                 </div>
                             </td>
                             <td class="fw-bold" style="color: #1a237e;">--</td>
-                            <td class="text-end pe-4">
+                            <td class="text-end pe-4 ActionCell">
                                 <div class="dropdown">
-                                    <button class="btn btn-action" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-h"></i>
+                                    <button class="btn btn-action-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                        <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="far fa-eye me-2"></i>Details</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                        <li>
+                                            <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">
+                                                <i class="far fa-eye me-2"></i> Details
+                                            </a>
+                                        </li>
+
                                         @if (item.Status == "Pending")
                                         {
-                                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="far fa-edit me-2"></i>Edit</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" asp-action="Cancel" asp-route-id="@item.Id"><i class="far fa-times-circle me-2"></i>Cancel Request</a></li>
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">
+                                                    <i class="far fa-edit me-2"></i> Edit Request
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" asp-action="Cancel" asp-route-id="@item.Id">
+                                                    <i class="far fa-times-circle me-2"></i> Cancel
+                                                </a>
+                                            </li>
                                         }
                                     </ul>
                                 </div>

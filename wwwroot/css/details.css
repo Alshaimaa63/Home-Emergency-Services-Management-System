@@ -1,0 +1,64 @@
+﻿.details-bg {
+    background-color: #fcfdfe;
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.details-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.details-header {
+    background: linear-gradient(135deg, #1a237e 0%, #0d1440 100%);
+    padding: 30px;
+    color: white;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+}
+
+/* Timeline Style for Status */
+.status-pill-large {
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.provider-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px dashed #cbd5e1;
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }

@@ -1,35 +1,120 @@
 ﻿@model HomeServices.Models.Request
 
-<div class="container mt-4">
-    <h2>Request Details</h2>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-3">Service Type</dt>
-        <dd class="col-sm-9">@Model.Category?.Name</dd>
+@{
+    ViewData["Title"] = "Request Details";
+    var statusClass = Model.Status == "Pending" ? "bg-primary-subtle text-primary" : 
+                     Model.Status == "Completed" ? "bg-success-subtle text-success" : "bg-info-subtle text-info";
+}
 
-        <dt class="col-sm-3">Description</dt>
-        <dd class="col-sm-9">@Model.Description</dd>
+<link rel="stylesheet" href="~/css/details.css" />
 
-        <dt class="col-sm-3">Status</dt>
-        <dd class="col-sm-9"><span class="badge bg-info">@Model.Status</span></dd>
+<div class="details-bg">
+    <div class="container">
+        <!-- Back Button -->
+        <a asp-action="Index" class="btn btn-link text-decoration-none text-muted mb-3">
+            <i class="fas fa-arrow-left me-2"></i> Back to Service History
+        </a>
 
-        <dt class="col-sm-3">Preferred Schedule</dt>
-        <dd class="col-sm-9">@Model.PreferredSchedule.ToString("f")</dd>
+        <div class="details-card">
+            <!-- Header Section -->
+            <div class="details-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Request #@Model.Id.ToString("D5")</h2>
+                    <p class="opacity-75 mb-0">Created on @Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                </div>
+                <div class="status-pill-large @statusClass">
+                    <i class="fas fa-circle fs-xs me-2" style="font-size: 8px;"></i> @Model.Status
+                </div>
+            </div>
 
-        <dt class="col-sm-3">Service Provider</dt>
-        <dd class="col-sm-9">@(Model.Provider?.FullName ?? "Not Assigned Yet")</dd>
-    </dl>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-</div>
-<div class="mt-3">
-    @if (Model.Status == "Pending")
-    {
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Request</a>
+            <div class="p-4 p-md-5">
+                <div class="row g-5">
+                    <!-- Left Column: Service Details -->
+                    <div class="col-md-7">
+                        <h5 class="fw-bold mb-4" style="color: #1a237e;">Service Information</h5>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-label">Service Type</div>
+                                <div class="info-value">
+                                    <span class="badge border text-dark px-3 py-2 rounded-pill bg-light">
+                                        @Model.Category?.Name
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-label">Preferred Schedule</div>
+                                <div class="info-value">@Model.PreferredSchedule.ToString("f")</div>
+                            </div>
+                        </div>
 
-        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this request?');">
-            <button type="submit" class="btn btn-danger">Cancel Request</button>
-        </form>
-    }
+                        <div class="info-label">Detailed Description</div>
+                        <div class="info-value text-muted fw-normal" style="line-height: 1.6;">
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
+                        </div>
 
-    <a asp-action="Index" class="btn btn-secondary">Back to My List</a>
+                        <hr class="my-4 opacity-25">
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            @if (Model.Status == "Pending")
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4 fw-bold shadow-sm">
+                                    <i class="far fa-edit me-2"></i> Edit Request
+                                </a>
+
+                                <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Cancel this request?');">
+                                    <button type="submit" class="btn btn-outline-danger px-4 fw-bold">
+                                        <i class="far fa-times-circle me-2"></i> Cancel Request
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Provider & Summary -->
+                    <div class="col-md-5">
+                        <div class="provider-box h-100">
+                            <h5 class="fw-bold mb-4">Service Provider</h5>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center me-3" style="width:60px; height:60px;">
+                                    <i class="fas fa-user-tie fa-2x text-secondary opacity-50"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold fs-5">@(Model.Provider?.FullName ?? "Assigning soon...")</div>
+                                    <div class="text-muted small">Professional Specialist</div>
+                                </div>
+                            </div>
+
+                            @if (Model.Provider != null)
+                            {
+                                <div class="alert alert-info border-0 bg-white shadow-sm">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    Contact information will be available once the job starts.
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="small text-muted">
+                                    We are currently matching your request with the best available professional in your area.
+                                </p>
+                            }
+
+                            <div class="mt-auto pt-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Estimated Cost</span>
+                                    <span class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                    <span class="fw-bold">Total Investment</span>
+                                    <span class="fw-bold text-primary">TBD</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
