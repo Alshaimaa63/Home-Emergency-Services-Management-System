@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace HomeServices.Controllers
 {
     //[Authorize] // عشان مفيش حد يدخل لوحة التحكم غير لما يسجل دخول
-    [Authorize(Roles = "Provider")] // كده الفني فقط هو اللي يقدر يفتح الكنترولر ده
+    [Authorize] // كده الفني فقط هو اللي يقدر يفتح الكنترولر ده
     public class ProviderController : Controller
     {
         private readonly ApplicationDbContext _context;

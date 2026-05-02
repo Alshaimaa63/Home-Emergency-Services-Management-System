@@ -1,11 +1,32 @@
-﻿<div class="container mt-5 text-center">
-    <div class="jumbotron shadow p-5 mb-4 bg-light rounded">
-        <h1 class="display-4">Provider Dashboard</h1>
-        <p class="lead">Welcome back! Manage your service requests and track your progress here.</p>
-        <hr class="my-4">
-        <div class="d-flex justify-content-center">
-            <a asp-action="AvailableRequests" class="btn btn-primary btn-lg mx-2">Browse New Requests</a>
-            <a asp-action="History" class="btn btn-info btn-lg mx-2 text-white">View My Tasks</a>
+﻿@{
+    ViewData["Title"] = "Pro Dashboard";
+}
+<link rel="stylesheet" href="~/css/history.css" />
+
+<div class="history-bg">
+    <div class="container">
+        <div class="mb-5">
+            <h1 class="fw-bold mb-1" style="color: #1a237e;">Pro Dashboard</h1>
+            <p class="text-muted">Welcome back! Manage your assignments and requests here.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="stat-card text-center py-5">
+                    <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                    <h3 class="fw-bold">Available Requests</h3>
+                    <p class="text-muted mb-4">View new service requests waiting for a professional.</p>
+                    <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-5">View Jobs</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card text-center py-5">
+                    <i class="fas fa-history fa-3x text-success mb-3"></i>
+                    <h3 class="fw-bold">My Work History</h3>
+                    <p class="text-muted mb-4">Track your accepted jobs and completed services.</p>
+                    <a asp-action="History" class="btn btn-outline-primary rounded-pill px-5">View History</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
