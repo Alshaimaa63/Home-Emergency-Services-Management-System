@@ -1,41 +1,83 @@
 ﻿@model HomeServices.Models.Request
 
 @{
-    ViewData["Title"] = "Create New Request";
+    ViewData["Title"] = "Request a Service";
 }
 
-<div class="container mt-4">
-    <h2>Request a Home Service</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-6">
-            <form asp-action="Create">
-                <div asp-validation-summary="All" class="text-danger"></div>
+<link rel="stylesheet" href="~/css/home.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-                <div class="form-group mb-3">
-                    <label asp-for="CategoryId" class="control-label">Service Type</label>
-                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
-                        <option value="">-- Select Service --</option>
-                    </select>
-                </div>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg overflow-hidden animate__animated animate__fadeInUp" style="border-radius: 20px;">
+                <div class="row g-0">
+                    <!-- Left Side: Branding/Info -->
+                    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center text-white p-4" 
+                         style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);">
+                        <div class="text-center">
+                            <i class="fas fa-tools fa-4x mb-4"></i>
+                            <h3 class="fw-bold">ServicePro</h3>
+                            <p class="small opacity-75">Your vision, our mastery. Fill in the details to receive offers from our vetted artisans.</p>
+                        </div>
+                    </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="Description" class="control-label"></label>
-                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
-                </div>
+                    <!-- Right Side: The Form -->
+                    <div class="col-md-8 p-4 p-lg-5 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="fw-bold m-0" style="color: #1a237e;">New Request</h2>
+                            
+                        </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="PreferredSchedule" class="control-label"></label>
-                    <input asp-for="PreferredSchedule" class="form-control" type="datetime-local" />
-                    <span asp-validation-for="PreferredSchedule" class="text-danger"></span>
-                </div>
+                        <form asp-action="Create">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small border-0 shadow-sm" role="alert"></div>
 
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
-                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                            <!-- Service Selection -->
+                            <div class="mb-4">
+                                <label asp-for="CategoryId" class="form-label fw-bold text-muted small text-uppercase">Service Type</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="fas fa-th-large text-primary"></i></span>
+                                    <select asp-for="CategoryId" class="form-select border-0 bg-light shadow-none py-3" asp-items="ViewBag.CategoryId">
+                                        <option value="">-- Choose Category --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label asp-for="Description" class="form-label fw-bold text-muted small text-uppercase">Describe the problem</label>
+                                <textarea asp-for="Description" class="form-control border-0 bg-light shadow-none p-3" rows="4" 
+                                          placeholder="e.g. My kitchen sink is leaking from the main pipe..."></textarea>
+                                <div class="form-text small mt-2">Provide as much detail as possible to get accurate price offers.</div>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Schedule -->
+                            <div class="mb-4">
+                                <label asp-for="PreferredSchedule" class="form-label fw-bold text-muted small text-uppercase">Preferred Date & Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                                    <input asp-for="PreferredSchedule" class="form-control border-0 bg-light shadow-none py-3" type="datetime-local" />
+                                </div>
+                                <span asp-validation-for="PreferredSchedule" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid mt-5">
+                                <button type="submit" class="btn btn-primary py-3 fw-bold shadow-sm" 
+                                        style="background: #1a237e; border: none; border-radius: 12px; transition: 0.3s;">
+                                    <i class="fas fa-paper-plane me-2"></i> Submit Booking
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

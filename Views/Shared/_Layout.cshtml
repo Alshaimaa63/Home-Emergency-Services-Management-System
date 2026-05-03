@@ -68,12 +68,14 @@
                                     <a class="nav-link" asp-controller="Requests" asp-action="Index">History</a>
                                 </li>
                             }
+                            @if (User.IsInRole("ServiceProvider"))
+                            {
+                                <li class="nav-item">
+                                  <a class="nav-link text-primary fw-bold" asp-controller="Provider" asp-action="Dashboard">DashBoard</a>
+                                </li>
+                            }
 
-                            <li class="nav-item">
-                                <a class="nav-link text-primary fw-bold" asp-controller="Provider" asp-action="Dashboard">
-                                    Provider Panel
-                                </a>
-                            </li>
+                            
                         }
                     </ul>
 
