@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <!-- إضافة أيقونات Bootstrap لدعم شكل المحفظة -->
+    <!-- Bootstrap icons for wallet support -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
@@ -34,7 +34,7 @@
             .nav-link:hover {
                 color: #00bcd4 !important;
             }
-        /* ستايل بسيط للمحفظة في الناف بار */
+
         .wallet-nav {
             background: #f8f9fa;
             border-radius: 50px;
@@ -71,15 +71,23 @@
                             @if (User.IsInRole("ServiceProvider"))
                             {
                                 <li class="nav-item">
-                                  <a class="nav-link text-primary fw-bold" asp-controller="Provider" asp-action="Dashboard">DashBoard</a>
+                                    <a class="nav-link text-primary fw-bold" asp-controller="Provider" asp-action="Dashboard">DashBoard</a>
                                 </li>
                             }
-
-                            
                         }
+
+                        @if (User.Identity.IsAuthenticated && (User.Identity.Name == "admin@home.com" || User.Identity.Name == "manager@home.com" || User.Identity.Name == "rawanarby11@gmail.com"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="SendComplaint">Complaints</a>
+                        </li>
                     </ul>
 
-                    <!-- إضافة رسائل التنبيه (Alerts) هنا لتظهر في كل الموقع عند حدوث سحب أو إيداع -->
+                    <!-- Alerts and Partial login view -->
                     <div class="d-flex align-items-center">
                         <partial name="_LoginPartial" />
                     </div>
@@ -89,7 +97,7 @@
     </header>
 
     <main role="main">
-        <!-- مكان ظهور رسائل النجاح أو الخطأ (مثل: تم خصم المبلغ بنجاح) -->
+        <!-- Success and Error alerts section -->
         <div class="container mt-3">
             @if (TempData["Success"] != null)
             {

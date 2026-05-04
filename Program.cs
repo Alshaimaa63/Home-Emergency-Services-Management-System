@@ -1,4 +1,4 @@
-using HomeServices.Data;
+﻿using HomeServices.Data;
 using HomeServices.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +24,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 
 // 3. MVC & Razor Pages Services
 builder.Services.AddControllersWithViews();
+builder.Services.AddAuthorization(options =>
+{
+    // هنا بنعرف "سياسة" اسمها AdminOnly
+    // السياسة دي بتقول: لازم المستخدم يكون مسجل دخول، وإيميله يكون واحد من القائمة دي
+    options.AddPolicy("AdminOnly", policy => policy.RequireAssertion(context =>
+        context.User.Identity.IsAuthenticated &&
+        new[] { "admin@home.com", "manager@home.com" , "rawanarby11@gmail.com"}.Contains(context.User.Identity.Name)));
+});
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -73,6 +82,16 @@ using (var scope = app.Services.CreateScope())
                 new Category { Name = "Cleaning", Description = "Full home cleaning, carpet washing, and sanitation" },
                 new Category { Name = "Painting", Description = "Professional interior/exterior painting and wall decoration" }
             );
+            context.SaveChanges();
+        }
+        if (!context.Complaints.Any())
+        {
+            context.Complaints.Add(new HomeServices.Models.Complaint
+            {
+                Title = "تأخير في الخدمة",
+                Description = "الفني تأخر عن موعده لمدة ساعتين",
+                UserEmail = "test@user.com"
+            });
             context.SaveChanges();
         }
     }

@@ -14,7 +14,7 @@ namespace HomeServices.Data
         // Database Tables
         public DbSet<Category> Categories { get; set; }
         public DbSet<Request> Requests { get; set; }
-
+        public DbSet<Complaint> Complaints { get; set; }
         // --- إضافة جدول العروض الجديد ---
         public DbSet<ServiceOffer> ServiceOffers { get; set; }
 
