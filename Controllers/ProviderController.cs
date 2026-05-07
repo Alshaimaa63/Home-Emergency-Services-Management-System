@@ -61,6 +61,20 @@ namespace HomeServices.Controllers
             };
 
             _context.ServiceOffers.Add(offer);
+
+            // NEW: Notify the Customer
+            var requestObj = await _context.Requests.FindAsync(RequestId);
+            if (requestObj != null)
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = requestObj.CustomerId ,
+                    Message = $"New offer received: A provider offered {Amount:C} for your request." ,
+                    TargetUrl = Url.Action("Details" , "Requests" , new { id = RequestId }) ,
+                    CreatedAt = DateTime.Now
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Your offer has been submitted successfully!";
@@ -96,6 +110,15 @@ namespace HomeServices.Controllers
 
                 // 3. إضافة المبلغ لمحفظة البروفيدر
                 provider.WalletBalance += providerShare;
+
+                // NEW: Notify the Customer that the job is done
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = request.CustomerId ,
+                    Message = "Service Completed! Please rate the provider and leave your feedback." ,
+                    TargetUrl = Url.Action("Details" , "Requests" , new { id = request.Id }) ,
+                    CreatedAt = DateTime.Now
+                });
 
                 _context.Update(provider);
                 await _context.SaveChangesAsync();

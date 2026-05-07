@@ -18,6 +18,7 @@ namespace HomeServices.Data
         // --- إضافة جدول العروض الجديد ---
         public DbSet<ServiceOffer> ServiceOffers { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

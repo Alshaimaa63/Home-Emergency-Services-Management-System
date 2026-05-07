@@ -1,26 +1,29 @@
 ﻿using HomeServices.Data;
 using HomeServices.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Security.Claims;
 using System.Linq;
+using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
-    [Authorize] // السماح لأي مستخدم مسجل دخول مبدئياً
+    [Authorize]
     public class RequestsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public RequestsController(ApplicationDbContext context)
+        // FIXED: Added userManager to the parameters here
+        public RequestsController(ApplicationDbContext context , UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // عرض الطلبات الخاصة بالعميل فقط
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
@@ -42,7 +45,7 @@ namespace HomeServices.Controllers
         [Authorize(Roles = "Customer")]
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name");
             return View();
         }
 
@@ -67,15 +70,29 @@ namespace HomeServices.Controllers
                 {
                     _context.Add(request);
                     await _context.SaveChangesAsync();
+
+                    // Notify ALL Service Providers
+                    var providers = await _userManager.GetUsersInRoleAsync("ServiceProvider");
+                    foreach (var p in providers)
+                    {
+                        _context.Notifications.Add(new Notification
+                        {
+                            UserId = p.Id ,
+                            Message = $"New Request: {request.Description.Substring(0 , Math.Min(15 , request.Description.Length))}..." ,
+                            TargetUrl = Url.Action("Details" , "Requests" , new { id = request.Id }) ,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                    await _context.SaveChangesAsync();
+
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", request.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name" , request.CategoryId);
             return View(request);
         }
 
-        // التعديل الأهم: متاح للعميل والفني لرؤية تفاصيل الطلب وتقديم العروض
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -83,8 +100,9 @@ namespace HomeServices.Controllers
             var request = await _context.Requests
                 .Include(r => r.Category)
                 .Include(r => r.Provider)
-                .Include(r => r.Customer) // أضفنا الكاستمر عشان نعرف مين صاحب الطلب
-                .Include(r => r.Offers).ThenInclude(o => o.Provider)
+                .Include(r => r.Customer)
+                // FIXED: Added ! to solve the CS8620 Warning
+                .Include(r => r.Offers!).ThenInclude(o => o.Provider)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (request == null) return NotFound();
@@ -114,23 +132,28 @@ namespace HomeServices.Controllers
             if (customer.WalletBalance < offer.Amount)
             {
                 TempData["Error"] = "Insufficient balance in your wallet.";
-                return RedirectToAction(nameof(Details), new { id = request.Id });
+                return RedirectToAction(nameof(Details) , new { id = request.Id });
             }
 
-            // الخصم من العميل وتغيير الحالة
             customer.WalletBalance -= offer.Amount;
-
             request.Status = "Accepted";
             request.ProviderId = provider.Id;
             request.FinalPrice = offer.Amount;
             offer.IsAccepted = true;
 
-            // ملحوظة: البروفيدر هياخد الـ 90% لما يدوس Complete من الكنترولر بتاعه
+            // Notify Provider
+            _context.Notifications.Add(new Notification
+            {
+                UserId = provider.Id ,
+                Message = "Your offer was accepted! You can now start working." ,
+                TargetUrl = Url.Action("Dashboard" , "Provider") ,
+                CreatedAt = DateTime.Now
+            });
 
             try
             {
                 await _context.SaveChangesAsync();
-                TempData["Success"] = $"Offer accepted! {offer.Amount:C} has been deducted from your wallet.";
+                TempData["Success"] = $"Offer accepted! {offer.Amount:C} deducted from wallet.";
             }
             catch (Exception)
             {
@@ -148,14 +171,14 @@ namespace HomeServices.Controllers
             if (request == null) return NotFound();
             if (request.Status != "Pending") return BadRequest("Cannot edit.");
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", request.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name" , request.CategoryId);
             return View(request);
         }
 
         [HttpPost]
         [Authorize(Roles = "Customer")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Description,PreferredSchedule,CategoryId")] Request request)
+        public async Task<IActionResult> Edit(int id , [Bind("Id,Description,PreferredSchedule,CategoryId")] Request request)
         {
             if (id != request.Id) return NotFound();
 
@@ -182,7 +205,7 @@ namespace HomeServices.Controllers
             return View(request);
         }
 
-        [HttpPost] // الأفضل يكون Post للحماية
+        [HttpPost]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Cancel(int id)
         {
