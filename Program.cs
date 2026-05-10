@@ -13,11 +13,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // 2. Identity Services Configuration
 // ????? ???? ??????? ApplicationUser ??? ???? ??????? ?????
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-    options.Password.RequiredLength = 4;
-    options.Password.RequireDigit = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
+    options.Password.RequiredLength = 8; 
+    options.Password.RequireDigit = true; 
+    options.Password.RequireLowercase = true; 
+    options.Password.RequireUppercase = true; 
+    options.Password.RequireNonAlphanumeric = true; 
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();

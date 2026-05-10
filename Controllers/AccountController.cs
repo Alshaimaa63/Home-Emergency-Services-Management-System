@@ -29,15 +29,26 @@ namespace HomeServices.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingUser = await _userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                    return View(model);
+                }
+                string cleanName = System.Text.RegularExpressions.Regex.Replace(model.FullName.Trim(), @"\s+", " ");
+                string cleanAddress = System.Text.RegularExpressions.Regex.Replace(model.Address.Trim(), @"\s+", " ");
+                // ----------------------------------
+
                 var user = new ApplicationUser
                 {
-                    UserName = model.Email ,
-                    Email = model.Email ,
-                    FullName = model.FullName ,
-                    Address = model.Address ,
-                    PhoneNumber = model.PhoneNumber ,
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FullName = cleanName, 
+                    Address = cleanAddress,
+                    PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.Now
                 };
+               
 
                 var result = await _userManager.CreateAsync(user , model.Password);
 

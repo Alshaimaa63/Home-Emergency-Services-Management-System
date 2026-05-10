@@ -19,10 +19,12 @@
                     </span>
                 </div>
             </li>
-        }
+        
 
         <li class="nav-item">
-            <span class="nav-link text-dark">Hello, **@displayName**!</span>
+            <span class="welcome-text">
+                Welcome, <strong class="user-name">@currentUser.FullName</strong>
+            </span>
         </li>
 
         <li class="nav-item">
@@ -34,6 +36,18 @@
                 <button type="submit" class="nav-link btn btn-link text-danger">Logout</button>
             </form>
         </li>
+        }
+        else
+        {
+            // لو الداتابيز اتمسحت واليوزر بقى null، اعرضي أزرار الدخول فوراً
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+            </li>
+        }
+
     }
     else
     {
