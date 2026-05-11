@@ -2,28 +2,27 @@
 
 #nullable disable
 
-namespace HomeServices.Data.Migrations
+namespace HomeServices.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateComplaintStatus : Migration
+    public partial class AddProfilePictureToUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "Status",
-                table: "Complaints",
+                name: "ProfilePicture",
+                table: "AspNetUsers",
                 type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Status",
-                table: "Complaints");
+                name: "ProfilePicture",
+                table: "AspNetUsers");
         }
     }
 }

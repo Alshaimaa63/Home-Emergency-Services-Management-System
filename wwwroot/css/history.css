@@ -37,6 +37,23 @@
         padding: 15px 20px;
     }
 
+/* --- [جديد] Letter Avatar Style --- */
+.avatar-circle {
+    width: 42px;
+    height: 42px;
+    background-color: #1a237e; /* الكحلي بتاع البراند */
+    color: white !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-right: 15px;
+    text-transform: uppercase;
+    box-shadow: 0 3px 8px rgba(26, 35, 126, 0.2);
+}
+
 /* Action Column Anchor */
 .ActionCell {
     position: relative !important;
@@ -62,16 +79,15 @@
         color: #1a237e;
     }
 
-/* THE FIX: Dropdown Menu Layering */
+/* Dropdown Menu Layering */
 .dropdown-menu {
     border-radius: 12px;
     padding: 8px;
     min-width: 180px;
-    z-index: 9999 !important; /* Force to front */
+    z-index: 9999 !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
     border: 1px solid #edf2f7 !important;
     background-color: #ffffff !important;
-    /* Manual positioning to ensure it stays below the button */
     margin-top: 5px !important;
 }
 
@@ -94,7 +110,12 @@
     padding: 25px;
     border-radius: 16px;
     border: 1px solid #edf2f7;
+    transition: transform 0.3s ease;
 }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
 
 .stat-val {
     font-size: 2.5rem;
@@ -102,44 +123,56 @@
     color: #1a237e;
 }
 
-.investment-card {
-    background: linear-gradient(135deg, #1a237e 0%, #0d1440 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 20px;
-}
-
-/* Status Badges */
+/* --- [تعديل] Status Badges - Pill Style --- */
 .badge-ui {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    padding: 8px 16px !important;
+    border-radius: 50px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    min-width: 110px;
+    justify-content: center;
 }
 
 .status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 10px;
 }
 
+/* حالة الانتظار */
 .status-pending {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: rgba(25, 118, 210, 0.1) !important;
+    color: #1976d2 !important;
+    border: 1px solid rgba(25, 118, 210, 0.2);
 }
 
     .status-pending .status-dot {
         background-color: #1976d2;
     }
 
+/* حالة الاكتمال */
 .status-completed {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: rgba(46, 125, 50, 0.1) !important;
+    color: #2e7d32 !important;
+    border: 1px solid rgba(46, 125, 50, 0.2);
 }
 
     .status-completed .status-dot {
         background-color: #2e7d32;
+    }
+
+/* Features */
+.feature-box {
+    padding: 40px;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+    .feature-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }

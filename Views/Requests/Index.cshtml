@@ -3,18 +3,17 @@
     ViewData["Title"] = "Service History";
 }
 
-<link rel="stylesheet" href="~/css/history.css" />
+@* تأكدي من إضافة رقم نسخة للـ CSS لضمان تحديث الشكل *@
+<link rel="stylesheet" href="~/css/history.css?v=1.2" />
 
 <div class="history-bg">
     <div class="container">
-        <!-- Page Header -->
-        <div class="mb-5 text-start">
+        <div class="mb-5 text-start animate__animated animate__fadeIn">
             <h1 class="fw-bold mb-1" style="color: #1a237e;">Service History</h1>
             <p class="text-muted">Review your past maintenance records and track ongoing services.</p>
         </div>
 
-        <!-- Dashboard Stats -->
-        <div class="row g-4 mb-5">
+        <div class="row g-4 mb-5 animate__animated animate__fadeInUp">
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="d-flex justify-content-between mb-2">
@@ -37,8 +36,7 @@
             </div>
         </div>
 
-        <!-- History Table -->
-        <div class="custom-table-container">
+        <div class="custom-table-container animate__animated animate__fadeInUp animate__delay-1s">
             <table class="table mb-0">
                 <thead>
                     <tr>
@@ -56,25 +54,32 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px;">
-                                        <i class="fas fa-user-tie text-secondary"></i>
+                                    @* اللمسة السحرية: Letter Avatar *@
+                                    <div class="avatar-circle">
+                                        @(string.IsNullOrEmpty(item.Provider?.FullName) ? "A" : item.Provider.FullName.Substring(0, 1))
                                     </div>
                                     <div>
-                                        <div class="fw-bold">@(item.Provider?.FullName ?? "Assigning Provider...")</div>
+                                        <div class="fw-bold text-dark">@(item.Provider?.FullName ?? "Assigning Provider...")</div>
                                         <div class="text-muted small">Specialist</div>
                                     </div>
                                 </div>
                             </td>
-                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
                             <td>
-                                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">@item.Category.Name</span>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
+                                    @item.Category.Name
+                                </span>
                             </td>
                             <td>
+                                @* استخدام الـ Pill Badges الجديدة *@
                                 <div class="badge-ui status-@item.Status.ToLower().Replace(" ", "")">
                                     <span class="status-dot"></span> @item.Status
                                 </div>
                             </td>
-                            <td class="fw-bold" style="color: #1a237e;">--</td>
+                            <td class="fw-bold" style="color: #1a237e;">
+                                @* حل مشكلة الـ Nullable decimal والـ ToString *@
+                                @(item.FinalPrice.HasValue && item.FinalPrice.Value > 0 ? item.FinalPrice.Value.ToString("C") : "--")
+                            </td>
                             <td class="text-end pe-4 ActionCell">
                                 <div class="dropdown">
                                     <button class="btn btn-action-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
@@ -91,7 +96,7 @@
                                         {
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">
+                                                <a class="dropdown-item text-primary" asp-action="Edit" asp-route-id="@item.Id">
                                                     <i class="far fa-edit me-2"></i> Edit Request
                                                 </a>
                                             </li>
@@ -106,6 +111,7 @@
             @if (!Model.Any())
             {
                 <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-light mb-3"></i>
                     <p class="text-muted">You haven't made any requests yet.</p>
                 </div>
             }

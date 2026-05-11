@@ -27,8 +27,8 @@ namespace HomeServices.Models
 
         // الربط مع البروفيدر اللي قدم العرض
         [Required]
-        public string ProviderId { get; set; }
-        [ForeignKey("ProviderId")]
+        public string ServiceProviderId { get; set; }
+        [ForeignKey("ServiceProviderId")]
         public virtual ApplicationUser Provider { get; set; }
     }
 }

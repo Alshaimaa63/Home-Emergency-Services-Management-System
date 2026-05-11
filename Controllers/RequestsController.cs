@@ -17,8 +17,7 @@ namespace HomeServices.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        // FIXED: Added userManager to the parameters here
-        public RequestsController(ApplicationDbContext context , UserManager<ApplicationUser> userManager)
+        public RequestsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -45,7 +44,7 @@ namespace HomeServices.Controllers
         [Authorize(Roles = "Customer")]
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name");
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
@@ -71,15 +70,14 @@ namespace HomeServices.Controllers
                     _context.Add(request);
                     await _context.SaveChangesAsync();
 
-                    // Notify ALL Service Providers
                     var providers = await _userManager.GetUsersInRoleAsync("ServiceProvider");
                     foreach (var p in providers)
                     {
                         _context.Notifications.Add(new Notification
                         {
-                            UserId = p.Id ,
-                            Message = $"New Request: {request.Description.Substring(0 , Math.Min(15 , request.Description.Length))}..." ,
-                            TargetUrl = Url.Action("Details" , "Requests" , new { id = request.Id }) ,
+                            UserId = p.Id,
+                            Message = $"New Request: {request.Description.Substring(0, Math.Min(15, request.Description.Length))}...",
+                            TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }),
                             CreatedAt = DateTime.Now
                         });
                     }
@@ -89,20 +87,23 @@ namespace HomeServices.Controllers
                 }
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name" , request.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", request.CategoryId);
             return View(request);
         }
 
+        // --- التعديل المحوري هنا (المهمة 4) ---
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var request = await _context.Requests
                 .Include(r => r.Category)
-                .Include(r => r.Provider)
                 .Include(r => r.Customer)
-                // FIXED: Added ! to solve the CS8620 Warning
-                .Include(r => r.Offers!).ThenInclude(o => o.Provider)
+                .Include(r => r.Provider)
+                // سحب العروض ومعاها البروفيدر ومعاها التقييمات بتاعته
+                .Include(r => r.Offers!)
+                    .ThenInclude(o => o.Provider)
+                        .ThenInclude(p => p.ReviewsReceived)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (request == null) return NotFound();
@@ -132,21 +133,20 @@ namespace HomeServices.Controllers
             if (customer.WalletBalance < offer.Amount)
             {
                 TempData["Error"] = "Insufficient balance in your wallet.";
-                return RedirectToAction(nameof(Details) , new { id = request.Id });
+                return RedirectToAction(nameof(Details), new { id = request.Id });
             }
 
             customer.WalletBalance -= offer.Amount;
             request.Status = "Accepted";
-            request.ProviderId = provider.Id;
+            request.ServiceProviderId = provider.Id;
             request.FinalPrice = offer.Amount;
             offer.IsAccepted = true;
 
-            // Notify Provider
             _context.Notifications.Add(new Notification
             {
-                UserId = provider.Id ,
-                Message = "Your offer was accepted! You can now start working." ,
-                TargetUrl = Url.Action("Dashboard" , "Provider") ,
+                UserId = provider.Id,
+                Message = "Your offer was accepted! You can now start working.",
+                TargetUrl = Url.Action("Dashboard", "Provider"),
                 CreatedAt = DateTime.Now
             });
 
@@ -171,14 +171,14 @@ namespace HomeServices.Controllers
             if (request == null) return NotFound();
             if (request.Status != "Pending") return BadRequest("Cannot edit.");
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories , "Id" , "Name" , request.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", request.CategoryId);
             return View(request);
         }
 
         [HttpPost]
         [Authorize(Roles = "Customer")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id , [Bind("Id,Description,PreferredSchedule,CategoryId")] Request request)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Description,PreferredSchedule,CategoryId")] Request request)
         {
             if (id != request.Id) return NotFound();
 

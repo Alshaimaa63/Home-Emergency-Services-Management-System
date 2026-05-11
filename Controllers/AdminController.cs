@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HomeServices.Controllers
 {
-    // Policy removed from class level to allow all authenticated users to access specific actions
     [Authorize]
     public class AdminController : Controller
     {
@@ -17,11 +16,16 @@ namespace HomeServices.Controllers
             _context = context;
         }
 
-        // AdminOnly Policy applied strictly to the Dashboard
+        // --- مهام الأدمن (Admin Dashboard) ---
+
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Dashboard()
         {
-            var requests = await _context.Requests.Include(r => r.Category).Include(r => r.Customer).ToListAsync();
+            var requests = await _context.Requests
+                .Include(r => r.Category)
+                .Include(r => r.Customer)
+                .ToListAsync();
+
             var complaints = await _context.Complaints.ToListAsync();
 
             ViewBag.Complaints = complaints;
@@ -34,7 +38,6 @@ namespace HomeServices.Controllers
             var request = await _context.Requests.FindAsync(id);
             if (request != null)
             {
-                // Admin cancels the request directly
                 request.Status = "Cancelled by Admin";
                 await _context.SaveChangesAsync();
             }
@@ -47,13 +50,65 @@ namespace HomeServices.Controllers
             var complaint = await _context.Complaints.FindAsync(id);
             if (complaint != null)
             {
-                complaint.Status = "Solved"; // Change status to Solved
+                complaint.Status = "Solved";
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction("Dashboard");
         }
 
-        // Accessible to any registered user (Customer or Provider)
+        // --- نظام التقييم (المهمة 2) ---
+        // ملاحظة: تم تعديل المسميات هنا لتطابق الموديل الجديد ServiceReview
+
+        [HttpGet]
+        public async Task<IActionResult> RateService(int requestId)
+        {
+            // جلب الطلب ومعاه بيانات البروفيدر والكاتيجوري
+            var request = await _context.Requests
+                .Include(r => r.Provider)
+                .Include(r => r.Category)
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null) return NotFound();
+
+            var model = new ServiceReview
+            {
+                RequestId = requestId,
+                ServiceProviderId = request.ServiceProviderId ?? "", // الاسم الجديد
+                CustomerId = request.CustomerId ?? ""
+            };
+
+            ViewBag.ProviderName = request.Provider?.FullName ?? "Specialist";
+            ViewBag.CategoryName = request.Category?.Name ?? "Service";
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RateService(ServiceReview review)
+        {
+            // إزالة الـ Validation للـ Navigation Properties لمنع الـ ModelState Error
+            ModelState.Remove("Customer");
+            ModelState.Remove("ServiceProvider"); // تم تحديث الاسم هنا
+            ModelState.Remove("Request");
+
+            if (ModelState.IsValid)
+            {
+                review.CreatedAt = DateTime.Now;
+
+                // التأكد من استخدام الـ DbSet الصحيح في الـ Context
+                _context.ReviewsReceived.Add(review);
+
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Thank you for your feedback! Your review helps others choose the best providers.";
+                return RedirectToAction("Index", "Home");
+            }
+            return View(review);
+        }
+
+        // --- نظام الشكاوى (Complaints) ---
+
         [HttpGet]
         public IActionResult SendComplaint()
         {
@@ -63,24 +118,20 @@ namespace HomeServices.Controllers
         [HttpPost]
         public async Task<IActionResult> SendComplaint(Complaint complaint)
         {
-            // Remove manual validation for fields handled by the server
             ModelState.Remove("UserEmail");
             ModelState.Remove("CreatedAt");
 
             if (ModelState.IsValid)
             {
-                complaint.UserEmail = User.Identity.Name;
+                complaint.UserEmail = User.Identity?.Name ?? "Anonymous";
                 complaint.CreatedAt = DateTime.Now;
 
                 _context.Complaints.Add(complaint);
                 await _context.SaveChangesAsync();
 
-                // Success message for the user
                 TempData["Success"] = "Your complaint has been submitted successfully. The admin will review it soon.";
                 return RedirectToAction("Index", "Home");
             }
-
-            // Return to view with validation errors if model is invalid
             return View(complaint);
         }
     }

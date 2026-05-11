@@ -1,32 +1,143 @@
-﻿@{
+﻿@model IEnumerable<HomeServices.Models.Request>
+@{
     ViewData["Title"] = "Pro Dashboard";
 }
 <link rel="stylesheet" href="~/css/history.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<div class="history-bg">
+<div class="history-bg py-5">
     <div class="container">
-        <div class="mb-5">
-            <h1 class="fw-bold mb-1" style="color: #1a237e;">Pro Dashboard</h1>
-            <p class="text-muted">Welcome back! Manage your assignments and requests here.</p>
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h1 class="fw-bold mb-1" style="color: #1a237e;">Pro Dashboard</h1>
+                <p class="text-muted mb-0">Welcome back! Here's an overview of your performance.</p>
+            </div>
+            <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-search me-2"></i>Find New Jobs
+            </a>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="stat-card text-center py-5">
-                    <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
-                    <h3 class="fw-bold">Available Requests</h3>
-                    <p class="text-muted mb-4">View new service requests waiting for a professional.</p>
-                    <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-5">View Jobs</a>
+        <div class="row g-4 mb-5 text-center">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
+                    <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
+                    <h6 class="text-muted fw-bold small uppercase">Total Earnings</h6>
+                    @* تعديل: التأكد من وجود قيمة في ViewBag *@
+                    <h2 class="fw-bold text-dark">@(ViewBag.TotalEarnings ?? "0.00")</h2>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="stat-card text-center py-5">
-                    <i class="fas fa-history fa-3x text-success mb-3"></i>
-                    <h3 class="fw-bold">My Work History</h3>
-                    <p class="text-muted mb-4">Track your accepted jobs and completed services.</p>
-                    <a asp-action="History" class="btn btn-outline-primary rounded-pill px-5">View History</a>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
+                    <i class="fas fa-check-double fa-2x text-success mb-3"></i>
+                    <h6 class="text-muted fw-bold small uppercase">Jobs Completed</h6>
+                    @* تعديل: التأكد من أن الموديل ليس نل قبل العد *@
+                    <h2 class="fw-bold text-dark">@(Model != null ? Model.Count(r => r.Status == "Completed") : 0)</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #ffc107 !important; border-radius: 15px;">
+                    <i class="fas fa-star fa-2x text-warning mb-3"></i>
+                    <h6 class="text-muted fw-bold small uppercase">Average Rating</h6>
+                    <h2 class="fw-bold text-dark">4.9/5</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-briefcase me-2 text-primary"></i>My Recent Tasks</h4>
+                <a asp-action="History" class="text-decoration-none fw-bold">View Full History <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="py-3">Service & Client</th>
+                                <th class="py-3 text-center">Status</th>
+                                <th class="py-3">Date</th>
+                                <th class="py-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @* تعديل: حماية الجدول من الـ Null *@
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var request in Model.Take(5))
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @* إضافة صورة العميل في الجدول *@
+                                                @if (!string.IsNullOrEmpty(request.Customer?.ProfilePicture))
+                                                {
+                                                    <img src="~/img/@request.Customer.ProfilePicture" class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-size: 12px;">
+                                                        @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <div class="fw-bold text-dark">@request.Category?.Name</div>
+                                                    <span class="text-muted small">Client: @request.Customer?.FullName</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge rounded-pill @(request.Status == "Completed" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3 py-2">
+                                                @request.Status
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                        <td class="text-center">
+                                            <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="fas fa-folder-open fa-3x mb-3 d-block opacity-25"></i>
+                                        No active tasks found in your record.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .bg-success-subtle {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .bg-warning-subtle {
+        background-color: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+</style>

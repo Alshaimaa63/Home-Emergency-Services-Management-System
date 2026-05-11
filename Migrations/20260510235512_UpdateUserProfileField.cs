@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace HomeServices.Data.Migrations
+namespace HomeServices.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFinalFix : Migration
+    public partial class UpdateUserProfileField : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

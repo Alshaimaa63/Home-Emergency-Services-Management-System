@@ -3,6 +3,7 @@ using HomeServices.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HomeServices.Data;
+using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
@@ -11,34 +12,47 @@ namespace HomeServices.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
 
-        // injecting the database context
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
         }
+
         public async Task<IActionResult> Index(string searchString)
         {
-            // Start with all categories
-            var categories = from c in _context.Categories
-                             select c;
+            // --- ?????: ????????? ????????? ??????? ??? ??? View ???? ?? (Index) ---
 
-            // If user searched for something
-            if (!string.IsNullOrEmpty(searchString))
+            // 1. ?? ???????? ???????? ????? ?? ????????? ?? ?????? ?? ??? ???? ??? Index
+            if (User.IsInRole("ServiceProvider"))
             {
-                categories = categories.Where(s => s.Name.Contains(searchString)
-                                               || s.Description.Contains(searchString));
-                ViewData["SearchQuery"] = searchString; // To keep the text in the search bar
+                var providerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // ???? ?????????? ?????? ?? ?????? ?? ????????? ?? ????????
+                ViewBag.TotalRequests = await _context.Requests.CountAsync(r => r.ServiceProviderId == providerId);
+                ViewBag.PendingRequests = await _context.Requests.CountAsync(r => r.ServiceProviderId == providerId && r.Status == "Pending");
+
+                // ????? View ???? (null model) ??? ????????? ?? ????? ??? Categories
+                return View(new List<Category>());
             }
 
-            var results = await categories.ToListAsync();
+            // 2. ??? ?????? (????? ???? ???????)
+            var categoriesQuery = _context.Categories.AsQueryable();
 
-            // If search yielded no results, we pass that info to the view
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                categoriesQuery = categoriesQuery.Where(s => s.Name.Contains(searchString)
+                                                        || s.Description.Contains(searchString));
+                ViewData["SearchQuery"] = searchString;
+            }
+
+            var results = await categoriesQuery.ToListAsync();
+
             if (!string.IsNullOrEmpty(searchString) && results.Count == 0)
             {
                 ViewBag.ErrorMessage = $"Sorry, we couldn't find any services matching '{searchString}'.";
             }
 
+            // ?????? ????? ??? Index ????? ???? ???????
             return View(results);
         }
 

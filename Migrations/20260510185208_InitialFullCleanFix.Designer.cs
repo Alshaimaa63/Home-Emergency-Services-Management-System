@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HomeServices.Data.Migrations
+namespace HomeServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260504221603_UpdateComplaintStatus")]
-    partial class UpdateComplaintStatus
+    [Migration("20260510185208_InitialFullCleanFix")]
+    partial class InitialFullCleanFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,9 +34,12 @@ namespace HomeServices.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -81,6 +84,9 @@ namespace HomeServices.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Specialty")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -164,6 +170,38 @@ namespace HomeServices.Data.Migrations
                     b.ToTable("Complaints");
                 });
 
+            modelBuilder.Entity("HomeServices.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TargetUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("HomeServices.Models.Request", b =>
                 {
                     b.Property<int>("Id")
@@ -195,11 +233,11 @@ namespace HomeServices.Data.Migrations
                     b.Property<DateTime>("PreferredSchedule")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ProviderId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int?>("Rating")
                         .HasColumnType("int");
+
+                    b.Property<string>("ServiceProviderId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -211,7 +249,7 @@ namespace HomeServices.Data.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("ProviderId");
+                    b.HasIndex("ServiceProviderId");
 
                     b.ToTable("Requests");
                 });
@@ -236,20 +274,61 @@ namespace HomeServices.Data.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProviderId")
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceProviderId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("ServiceProviderId");
+
+                    b.ToTable("ServiceOffers");
+                });
+
+            modelBuilder.Entity("HomeServices.Models.ServiceReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
 
                     b.Property<int>("RequestId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ServiceProviderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ProviderId");
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("ServiceOffers");
+                    b.HasIndex("ServiceProviderId");
+
+                    b.ToTable("ReviewsReceived");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -385,6 +464,17 @@ namespace HomeServices.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HomeServices.Models.Notification", b =>
+                {
+                    b.HasOne("HomeServices.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HomeServices.Models.Request", b =>
                 {
                     b.HasOne("HomeServices.Models.Category", "Category")
@@ -401,7 +491,7 @@ namespace HomeServices.Data.Migrations
 
                     b.HasOne("HomeServices.Models.ApplicationUser", "Provider")
                         .WithMany("ProviderTasks")
-                        .HasForeignKey("ProviderId")
+                        .HasForeignKey("ServiceProviderId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
@@ -413,21 +503,48 @@ namespace HomeServices.Data.Migrations
 
             modelBuilder.Entity("HomeServices.Models.ServiceOffer", b =>
                 {
-                    b.HasOne("HomeServices.Models.ApplicationUser", "Provider")
-                        .WithMany("Offers")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HomeServices.Models.Request", "Request")
                         .WithMany("Offers")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HomeServices.Models.ApplicationUser", "Provider")
+                        .WithMany("Offers")
+                        .HasForeignKey("ServiceProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Provider");
 
                     b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("HomeServices.Models.ServiceReview", b =>
+                {
+                    b.HasOne("HomeServices.Models.ApplicationUser", "Customer")
+                        .WithMany("ReviewsGiven")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HomeServices.Models.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HomeServices.Models.ApplicationUser", "ServiceProvider")
+                        .WithMany("ReviewsReceived")
+                        .HasForeignKey("ServiceProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("ServiceProvider");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -488,6 +605,10 @@ namespace HomeServices.Data.Migrations
                     b.Navigation("Offers");
 
                     b.Navigation("ProviderTasks");
+
+                    b.Navigation("ReviewsGiven");
+
+                    b.Navigation("ReviewsReceived");
                 });
 
             modelBuilder.Entity("HomeServices.Models.Category", b =>

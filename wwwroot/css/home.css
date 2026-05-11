@@ -3,7 +3,7 @@
     position: relative;
     padding: 160px 0;
     text-align: center;
-    background: linear-gradient(rgba(255, 255, 255, 0.7), rgb(255 255 255 / 23%)), url(../img/hero_img.png);
+    background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.23)), url(../img/hero_img.png);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -15,14 +15,18 @@
     font-size: 4.5rem;
     letter-spacing: -1.5px;
     text-shadow: 0 2px 10px rgba(255,255,255,0.5);
+    margin-bottom: 20px;
 }
 
+/* تعديل الـ Subtitle ليكون أنيقاً ويدعم السطور المتعددة */
 .hero-subtitle {
     color: #333;
-    font-size: 1.3rem;
-    max-width: 700px;
-    margin: 20px auto;
-    font-weight: 500;
+    font-size: 1.2rem;
+    max-width: 750px;
+    margin: 0 auto 40px auto;
+    font-weight: 300; /* جعلنا الخط رفيعاً بشكل افتراضي */
+    line-height: 1.8; /* لفك اشتباك السطور */
+    opacity: 0.9;
 }
 
 /* Search Bar - High Contrast */
@@ -45,6 +49,7 @@
         border-radius: 50px 0 0 50px;
     }
 
+/* ستايل زرار البحث وزرار المهام الموحد */
 .btn-find {
     background-color: #1a237e;
     color: white;
@@ -53,11 +58,37 @@
     border-radius: 50px;
     font-weight: 600;
     transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
     .btn-find:hover {
         background-color: #00bcd4;
         color: white;
+        transform: translateY(-2px);
+    }
+
+/* ستايل خاص لزرار المهام الأبيض الخاص بالبروفيدر */
+.btn-mission-white {
+    background: white !important;
+    color: #1a237e !important;
+    border-radius: 50px;
+    padding: 15px 45px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transition: 0.3s;
+    display: inline-block;
+    text-decoration: none;
+}
+
+    .btn-mission-white:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        background: #f8f9fa !important;
     }
 
 /* Service Cards - Hover & Pointer Fix */
@@ -67,7 +98,7 @@
     height: 380px;
     position: relative;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    cursor: pointer; 
+    cursor: pointer;
 }
 
     .service-card img {

@@ -8,129 +8,146 @@ using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
-    [Authorize(Roles = "ServiceProvider")] // تأكدي أن اسم الرول مطابق لما في قاعدة البيانات
-    public class ProviderController : Controller
-    {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
+	[Authorize(Roles = "ServiceProvider")]
+	public class ProviderController : Controller
+	{
+		private readonly ApplicationDbContext _context;
+		private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProviderController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+		public ProviderController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+		{
+			_context = context;
+			_userManager = userManager;
+		}
 
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
+		// --- التعديل هنا لحل مشكلة الإيرور ---
+		public async Task<IActionResult> Dashboard()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // 1. عرض الطلبات المتاحة (بدون تغيير كبير هنا)
-        public async Task<IActionResult> AvailableRequests()
-        {
-            var requests = await _context.Requests
-                .Include(r => r.Category)
-                .Where(r => r.Status == "Pending")
-                .ToListAsync();
+			// 1. نجيب كل الطلبات المرتبطة بالبروفيدر ده (المقبولة والمكتملة)
+			var myRequests = await _context.Requests
+				.Include(r => r.Category)
+				.Include(r => r.Customer)
+				.Where(r => r.ServiceProviderId == userId)
+				.OrderByDescending(r => r.CreatedAt)
+				.ToListAsync();
 
-            return View(requests);
-        }
+			// 2. نحسب إجمالي الأرباح من الطلبات المكتملة فقط
+			ViewBag.TotalEarnings = myRequests
+				.Where(r => r.Status == "Completed")
+				.Sum(r => r.FinalPrice ?? 0)
+				.ToString("F2"); // تنسيق رقمي
 
-        // 2. [جديد] وظيفة تقديم عرض سعر (Submit Offer)
-        [HttpPost]
-        public async Task<IActionResult> SubmitOffer(int RequestId, decimal Amount)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			// 3. نبعت اللستة للـ View عشان الجدول يشتغل
+			return View(myRequests);
+		}
 
-            // التأكد من أن البروفيدر لم يقدم عرضاً مسبقاً على نفس الطلب
-            var existingOffer = await _context.ServiceOffers
-                .FirstOrDefaultAsync(o => o.RequestId == RequestId && o.ProviderId == userId);
+		[AllowAnonymous]
+		public IActionResult Profile(string id)
+		{
+			if (string.IsNullOrEmpty(id)) return NotFound();
+			return RedirectToAction("Profile", "Account", new { id = id });
+		}
 
-            if (existingOffer != null)
-            {
-                TempData["Error"] = "You have already submitted an offer for this request.";
-                return RedirectToAction("Details", "Requests", new { id = RequestId });
-            }
+		public async Task<IActionResult> AvailableRequests()
+		{
+			var requests = await _context.Requests
+				.Include(r => r.Category)
+				.Where(r => r.Status == "Pending")
+				.ToListAsync();
 
-            var offer = new ServiceOffer
-            {
-                RequestId = RequestId,
-                ProviderId = userId,
-                Amount = Amount,
-                CreatedAt = DateTime.Now
-            };
+			return View(requests);
+		}
 
-            _context.ServiceOffers.Add(offer);
+		[HttpPost]
+		public async Task<IActionResult> SubmitOffer(int RequestId, decimal Amount)
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // NEW: Notify the Customer
-            var requestObj = await _context.Requests.FindAsync(RequestId);
-            if (requestObj != null)
-            {
-                _context.Notifications.Add(new Notification
-                {
-                    UserId = requestObj.CustomerId ,
-                    Message = $"New offer received: A provider offered {Amount:C} for your request." ,
-                    TargetUrl = Url.Action("Details" , "Requests" , new { id = RequestId }) ,
-                    CreatedAt = DateTime.Now
-                });
-            }
+			var existingOffer = await _context.ServiceOffers
+				.FirstOrDefaultAsync(o => o.RequestId == RequestId && o.ServiceProviderId == userId);
 
-            await _context.SaveChangesAsync();
+			if (existingOffer != null)
+			{
+				TempData["Error"] = "You have already submitted an offer for this request.";
+				return RedirectToAction("Details", "Requests", new { id = RequestId });
+			}
 
-            TempData["Success"] = "Your offer has been submitted successfully!";
-            return RedirectToAction("Details", "Requests", new { id = RequestId });
-        }
+			var offer = new ServiceOffer
+			{
+				RequestId = RequestId,
+				ServiceProviderId = userId,
+				Amount = Amount,
+				CreatedAt = DateTime.Now
+			};
 
-        public async Task<IActionResult> History()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			_context.ServiceOffers.Add(offer);
 
-            var myHistory = await _context.Requests
-                .Include(r => r.Category)
-                .Where(r => r.ProviderId == userId)
-                .ToListAsync();
+			var requestObj = await _context.Requests.FindAsync(RequestId);
+			if (requestObj != null)
+			{
+				_context.Notifications.Add(new Notification
+				{
+					UserId = requestObj.CustomerId,
+					Message = $"New offer received: A provider offered {Amount:C} for your request.",
+					TargetUrl = Url.Action("Details", "Requests", new { id = RequestId }),
+					CreatedAt = DateTime.Now
+				});
+			}
 
-            return View(myHistory);
-        }
+			await _context.SaveChangesAsync();
 
-        // 3. [تعديل] وظيفة إتمام الطلب وتوزيع الأرباح (90% للبروفيدر)
-        [HttpPost]
-        public async Task<IActionResult> CompleteRequest(int id)
-        {
-            var request = await _context.Requests.FindAsync(id);
-            var provider = await _userManager.GetUserAsync(User);
+			TempData["Success"] = "Your offer has been submitted successfully!";
+			return RedirectToAction("Details", "Requests", new { id = RequestId });
+		}
 
-            if (request != null && request.Status == "Accepted" && request.FinalPrice.HasValue)
-            {
-                // 1. تغيير حالة الطلب
-                request.Status = "Completed";
+		public async Task<IActionResult> History()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                // 2. حسبة الأرباح (البروفيدر يأخذ 90% من السعر النهائي)
-                decimal providerShare = request.FinalPrice.Value * 0.90m;
+			var myHistory = await _context.Requests
+				.Include(r => r.Category)
+				.Include(r => r.Customer) // أضفنا الـ Customer عشان لو الجدول محتاج اسمه
+				.Where(r => r.ServiceProviderId == userId)
+				.OrderByDescending(r => r.CreatedAt)
+				.ToListAsync();
 
-                // 3. إضافة المبلغ لمحفظة البروفيدر
-                provider.WalletBalance += providerShare;
+			return View(myHistory);
+		}
 
-                // NEW: Notify the Customer that the job is done
-                _context.Notifications.Add(new Notification
-                {
-                    UserId = request.CustomerId ,
-                    Message = "Service Completed! Please rate the provider and leave your feedback." ,
-                    TargetUrl = Url.Action("Details" , "Requests" , new { id = request.Id }) ,
-                    CreatedAt = DateTime.Now
-                });
+		[HttpPost]
+		public async Task<IActionResult> CompleteRequest(int id)
+		{
+			var request = await _context.Requests.FindAsync(id);
+			var provider = await _userManager.GetUserAsync(User);
 
-                _context.Update(provider);
-                await _context.SaveChangesAsync();
+			if (request != null && request.Status == "Accepted" && request.FinalPrice.HasValue)
+			{
+				request.Status = "Completed";
 
-                TempData["Success"] = $"Job completed! {providerShare:C} has been added to your wallet.";
-            }
-            else
-            {
-                TempData["Error"] = "Could not complete the request. Please check final price.";
-            }
+				decimal providerShare = request.FinalPrice.Value * 0.90m;
+				provider.WalletBalance += providerShare;
 
-            return RedirectToAction(nameof(History));
-        }
-    }
+				_context.Notifications.Add(new Notification
+				{
+					UserId = request.CustomerId,
+					Message = "Service Completed! Please rate the provider and leave your feedback.",
+					TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }),
+					CreatedAt = DateTime.Now
+				});
+
+				_context.Update(provider);
+				await _context.SaveChangesAsync();
+
+				TempData["Success"] = $"Job completed! {providerShare:C} has been added to your wallet.";
+			}
+			else
+			{
+				TempData["Error"] = "Could not complete the request. Please check final price.";
+			}
+
+			return RedirectToAction(nameof(Dashboard)); // عدلناها تروح للـ Dashboard أحسن
+		}
+	}
 }

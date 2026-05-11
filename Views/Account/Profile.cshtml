@@ -2,60 +2,220 @@
 
 @{
     ViewData["Title"] = "My Profile";
-    var walletColor = Model.WalletBalance > 0 ? "text-success" : "text-danger";
+    var walletColor = Model.WalletBalance > 0 ? "text-success" : "text-dark";
+    bool isProvider = ViewBag.UserRole == "ServiceProvider";
+
+    // حسابات التقييم الديناميكية
+    var reviewsCount = Model.ReviewsReceived?.Count() ?? 0;
+    var avgRating = reviewsCount > 0 ? Model.ReviewsReceived.Average(r => r.Rating) : 0;
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="container mt-5">
-    <div class="card shadow border-0">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Personal Profile</h3>
-            <span class="badge bg-success fs-6">Balance: @Model.WalletBalance.ToString("C")</span>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4 border-0 border-start border-4 border-success" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 text-center border-end">
-                    <img src="https://ui-avatars.com/api/?name=@Model.FullName&background=random&size=150"
-                         class="rounded-circle mb-3 shadow-sm" />
-                    <h4>@Model.FullName</h4>
-                    <span class="badge bg-primary px-3 py-2">@ViewBag.UserRole</span>
-                </div>
-                <div class="col-md-8 px-4">
-                    <h5 class="text-muted border-bottom pb-2">User Information</h5>
+    }
 
-                    <div class="row mt-3">
+    <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Personal Profile</h4>
+            <div class="d-flex align-items-center gap-3">
+                <a asp-action="EditProfile" asp-controller="Account" class="btn btn-sm btn-outline-light rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Info
+                </a>
+                <span class="badge bg-success fs-6 shadow-sm">Balance: @Model.WalletBalance.ToString("C")</span>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <div class="row">
+                <div class="col-md-4 text-center border-md-end mb-4 mb-md-0">
+                    <div class="position-relative d-inline-block mb-3">
+                        @* --- تعديل المسار ليعمل مع مجلد img --- *@
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                        {
+                            <img src="~/img/@Model.ProfilePicture"
+                                 class="rounded-circle shadow border border-4 border-white"
+                                 style="width: 150px; height: 150px; object-fit: cover;"
+                                 alt="Profile Picture" />
+                        }
+                        else
+                        {
+                            @* في حال عدم وجود صورة، نعرض default-user.png من مجلد img *@
+                            <img src="~/img/default-user.png"
+                                 class="rounded-circle shadow border border-4 border-white"
+                                 style="width: 150px; height: 150px; object-fit: cover;"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=@Model.FullName&background=random&size=150'"
+                                 alt="Default Avatar" />
+                        }
+                    </div>
+
+                    <h3 class="fw-bold text-dark">@Model.FullName</h3>
+                    <span class="badge @(isProvider ? "bg-primary" : "bg-info text-dark") px-4 py-2 mb-3 shadow-sm rounded-pill">
+                        <i class="fas @(isProvider ? "fa-user-tie" : "fa-user") me-2"></i>@ViewBag.UserRole
+                    </span>
+
+                    @if (isProvider)
+                    {
+                        <div class="mt-2 animate__animated animate__fadeIn">
+                            <div class="star-rating h5 mb-1">
+                                @if (reviewsCount > 0)
+                                {
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="@(i <= Math.Round(avgRating) ? "fas fa-star text-warning" : "far fa-star text-secondary")"></i>
+                                    }
+                                    <span class="ms-1 fw-bold text-dark">(@avgRating.ToString("F1"))</span>
+                                    <div class="small text-muted mt-1">(@reviewsCount Reviews)</div>
+                                }
+                                else
+                                {
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="far fa-star text-secondary"></i>
+                                    }
+                                    <div class="small text-muted mt-1">New Member - No ratings yet</div>
+                                }
+                            </div>
+                            <p class="text-primary fw-bold small text-uppercase tracking-wider">
+                                <i class="bi bi-patch-check-fill me-1"></i>@(Model.Specialty ?? "Verified Provider")
+                            </p>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-8 px-md-5">
+                    <h5 class="text-muted border-bottom pb-2 mb-4"><i class="bi bi-info-circle-fill me-2"></i>User Information</h5>
+
+                    <div class="row g-4 mt-1">
                         <div class="col-sm-6">
-                            <p><strong>Email:</strong> <br /> @Model.Email</p>
-                            <p><strong>Phone:</strong> <br /> @(Model.PhoneNumber ?? "Not Set")</p>
+                            <label class="small text-muted fw-bold text-uppercase">Email Address</label>
+                            <p class="text-dark fw-medium mt-1"><i class="bi bi-envelope me-2 text-primary"></i>@Model.Email</p>
+
+                            <label class="small text-muted fw-bold text-uppercase mt-3">Phone Number</label>
+                            <p class="text-dark fw-medium mt-1"><i class="bi bi-phone me-2 text-primary"></i>@(Model.PhoneNumber ?? "Not Set")</p>
                         </div>
                         <div class="col-sm-6">
-                            <p><strong>Address:</strong> <br /> @Model.Address</p>
-                            <p><strong>Member Since:</strong> <br /> @Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                            <label class="small text-muted fw-bold text-uppercase">Residential Address</label>
+                            <p class="text-dark fw-medium mt-1"><i class="bi bi-geo-alt me-2 text-primary"></i>@Model.Address</p>
+
+                            <label class="small text-muted fw-bold text-uppercase mt-3">Member Since</label>
+                            <p class="text-dark fw-medium mt-1"><i class="bi bi-calendar-check me-2 text-primary"></i>@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
                         </div>
                     </div>
 
+                    @if (isProvider)
+                    {
+                        <div class="mt-4 p-3 bg-white border-start border-primary border-4 rounded shadow-sm italic-box">
+                            <h6 class="text-uppercase text-muted small fw-bold mb-2"><i class="bi bi-person-lines-fill me-2"></i>About Me</h6>
+                            <p class="mb-0 fst-italic text-secondary">@(Model.Bio ?? "This provider hasn't added a biography yet.")</p>
+                        </div>
+                    }
+
                     <div class="mt-4 p-3 bg-light rounded border shadow-sm">
-                        <h6 class="text-uppercase text-muted small fw-bold">Virtual Wallet</h6>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Virtual Wallet</h6>
                         <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-wallet2 fs-1 @walletColor"></i>
+                            <div class="flex-shrink-0 bg-white p-3 rounded-circle shadow-sm">
+                                <i class="bi bi-wallet2 fs-2 @walletColor"></i>
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h4 class="mb-0 @walletColor fw-bold">@Model.WalletBalance.ToString("C")</h4>
-                                <small class="text-muted">Available for home services</small>
+                                <small class="text-muted fw-medium">
+                                    <i class="bi bi-info-circle-fill me-1"></i>
+                                    @(isProvider ? "Total earnings accumulated from your services" : "Balance available for booking home services")
+                                </small>
                             </div>
                         </div>
                     </div>
-
-                    <div class="mt-4">
-                        <a href="/" class="btn btn-secondary shadow-sm">
-                            <i class="bi bi-house-door"></i> Back to Home
-                        </a>
-                        <!-- تم حذف زر Edit Profile من هنا -->
-                    </div>
                 </div>
             </div>
+
+            @if (isProvider)
+            {
+                <hr class="my-5 opacity-25" />
+                <div class="row px-3">
+                    <h5 class="text-muted mb-4"><i class="bi bi-chat-left-heart me-2"></i>Recent Customer Reviews</h5>
+                    @if (reviewsCount > 0)
+                    {
+                        <div class="row g-3">
+                            @foreach (var review in Model.ReviewsReceived.OrderByDescending(r => r.CreatedAt))
+                            {
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 bg-light shadow-sm hover-card">
+                                        <div class="card-body">
+                                            <div class="text-warning mb-2 small">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="@(i <= review.Rating ? "fas fa-star text-warning" : "far fa-star text-secondary")"></i>
+                                                }
+                                            </div>
+                                            <p class="card-text text-dark">"@review.Comment"</p>
+                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                                <span class="fw-bold small"><i class="bi bi-person-check me-1"></i>@review.Customer?.FullName</span>
+                                                <span class="text-muted x-small">@review.CreatedAt.ToShortDateString()</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5 bg-light rounded shadow-sm border-dashed">
+                            <i class="bi bi-chat-square-dots fs-1 text-muted opacity-50"></i>
+                            <p class="text-muted mt-3 mb-0">No reviews available yet for this provider.</p>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>
+
+<style>
+    .border-dashed {
+        border: 2px dashed #dee2e6;
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-secondary {
+        color: #adb5bd !important;
+    }
+
+    .gap-3 {
+        gap: 1rem;
+    }
+
+    .italic-box {
+        background: #fafafa !important;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-3px);
+        transition: 0.3s;
+    }
+
+    .border-md-end {
+        border-right: 1px solid #eee;
+    }
+
+    @@media (max-width: 768px) {
+        .border-md-end {
+            border-right: none;
+        }
+    }
+</style>

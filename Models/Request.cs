@@ -49,9 +49,9 @@ namespace HomeServices.Models
         public virtual Category Category { get; set; }
 
         [Display(Name = "Service Provider")]
-        public string? ProviderId { get; set; }
+        public string? ServiceProviderId { get; set; }
 
-        [ForeignKey("ProviderId")]
+        [ForeignKey("ServiceProviderId")]
         public virtual ApplicationUser? Provider { get; set; }
 
         [Display(Name = "Created At")]
