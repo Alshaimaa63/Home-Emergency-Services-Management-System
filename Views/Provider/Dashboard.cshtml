@@ -1,20 +1,49 @@
 ﻿@model IEnumerable<HomeServices.Models.Request>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
 @{
     ViewData["Title"] = "Pro Dashboard";
+    var currentUser = await UserManager.GetUserAsync(User);
 }
+
 <link rel="stylesheet" href="~/css/history.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="history-bg py-5">
     <div class="container">
+
+        @if (currentUser != null && !currentUser.IsVerified)
+        {
+            <div class="alert alert-warning border-0 shadow-sm mb-4 animate__animated animate__pulse animate__infinite" style="border-left: 5px solid #ffc107 !important; border-radius: 12px;">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clock fa-2x me-3 opacity-75"></i>
+                    <div>
+                        <h5 class="fw-bold mb-1">Account Under Review</h5>
+                        <p class="mb-0 small">Your profile is currently being verified by our team. You will be able to submit offers once the admin approves your account.</p>
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="d-flex justify-content-between align-items-end mb-5">
             <div>
                 <h1 class="fw-bold mb-1" style="color: #1a237e;">Pro Dashboard</h1>
-                <p class="text-muted mb-0">Welcome back! Here's an overview of your performance.</p>
+                <p class="text-muted mb-0">Welcome back, <strong>@currentUser?.FullName</strong>! Here's your performance overview.</p>
             </div>
-            <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="fas fa-search me-2"></i>Find New Jobs
-            </a>
+
+            @if (currentUser != null && currentUser.IsVerified)
+            {
+                <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="fas fa-search me-2"></i>Find New Jobs
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-secondary rounded-pill px-4 shadow-sm disabled" title="Verification Required">
+                    <i class="fas fa-lock me-2"></i>Pending Verification
+                </button>
+            }
         </div>
 
         <div class="row g-4 mb-5 text-center">
@@ -22,7 +51,6 @@
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
                     <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
                     <h6 class="text-muted fw-bold small uppercase">Total Earnings</h6>
-                    @* تعديل: التأكد من وجود قيمة في ViewBag *@
                     <h2 class="fw-bold text-dark">@(ViewBag.TotalEarnings ?? "0.00")</h2>
                 </div>
             </div>
@@ -30,15 +58,14 @@
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
                     <i class="fas fa-check-double fa-2x text-success mb-3"></i>
                     <h6 class="text-muted fw-bold small uppercase">Jobs Completed</h6>
-                    @* تعديل: التأكد من أن الموديل ليس نل قبل العد *@
                     <h2 class="fw-bold text-dark">@(Model != null ? Model.Count(r => r.Status == "Completed") : 0)</h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #ffc107 !important; border-radius: 15px;">
                     <i class="fas fa-star fa-2x text-warning mb-3"></i>
-                    <h6 class="text-muted fw-bold small uppercase">Average Rating</h6>
-                    <h2 class="fw-bold text-dark">4.9/5</h2>
+                    <h6 class="text-muted fw-bold small uppercase">Reputation Score</h6>
+                    <h2 class="fw-bold text-dark">@(currentUser?.IsVerified == true ? "Verified Pro" : "New Member")</h2>
                 </div>
             </div>
         </div>
@@ -60,7 +87,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @* تعديل: حماية الجدول من الـ Null *@
                             @if (Model != null && Model.Any())
                             {
                                 foreach (var request in Model.Take(5))
@@ -68,7 +94,6 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @* إضافة صورة العميل في الجدول *@
                                                 @if (!string.IsNullOrEmpty(request.Customer?.ProfilePicture))
                                                 {
                                                     <img src="~/img/@request.Customer.ProfilePicture" class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;" />

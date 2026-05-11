@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeServices.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFullCleanFix : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,7 +35,9 @@ namespace HomeServices.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     WalletBalance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
                     Specialty = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -322,6 +324,21 @@ namespace HomeServices.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "9f7f9035-7d52-474c-836e-d90390f70154", null, "Admin", "ADMIN" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "Address", "Bio", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FullName", "IsVerified", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicture", "SecurityStamp", "Specialty", "TwoFactorEnabled", "UserName", "WalletBalance" },
+                values: new object[] { "b74ddd14-6340-4840-95c2-db12554843e5", 0, null, null, "5aec0fca-7dba-4e75-a383-abbd71ad4c5a", new DateTime(2026, 5, 11, 21, 58, 31, 563, DateTimeKind.Local).AddTicks(3786), "admin@home.com", true, "System Admin", true, false, null, "ADMIN@HOME.COM", "ADMIN@HOME.COM", "AQAAAAIAAYagAAAAELo3VeBABA8rx9aIjiPRZ7W3YuBjYq3xhDjlxev/NV+ukbwgAZOQjMHNodrYHMJuWw==", null, false, "default-user.png", "f3428183-9b0d-46b3-8537-36dc0ffe1c45", null, false, "admin@home.com", 0.00m });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "9f7f9035-7d52-474c-836e-d90390f70154", "b74ddd14-6340-4840-95c2-db12554843e5" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

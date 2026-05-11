@@ -22,11 +22,12 @@ namespace HomeServices.Models
 
         [Display(Name = "Wallet Balance")]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal WalletBalance { get; set; } = 1000.00m;
+        public decimal WalletBalance { get; set; } = 0m;
 
         [Display(Name = "About Me")]
         [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters")]
         public string? Bio { get; set; }
+        public bool IsVerified { get; set; } = false; // افتراضياً غير مقبول حتى يوافق الأدمن
 
         [Display(Name = "Specialty")]
         public string? Specialty { get; set; }

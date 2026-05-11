@@ -70,18 +70,28 @@ namespace HomeServices.Controllers
                     _context.Add(request);
                     await _context.SaveChangesAsync();
 
-                    var providers = await _userManager.GetUsersInRoleAsync("ServiceProvider");
-                    foreach (var p in providers)
+                    // --- التعديل هنا لفلترة مقدمي الخدمة الموثقين فقط ---
+
+                    // 1. جلب كل اليوزرز اللي ليهم دور مقدم خدمة
+                    var allProviders = await _userManager.GetUsersInRoleAsync("ServiceProvider");
+
+                    // 2. فلترة القائمة برمجياً لاختيار الموثقين فقط (IsVerified == true)
+                    var verifiedProviders = allProviders.Where(p => p.IsVerified).ToList();
+
+                    foreach (var p in verifiedProviders)
                     {
                         _context.Notifications.Add(new Notification
                         {
                             UserId = p.Id,
                             Message = $"New Request: {request.Description.Substring(0, Math.Min(15, request.Description.Length))}...",
                             TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }),
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.Now,
+                            IsRead = false
                         });
                     }
+
                     await _context.SaveChangesAsync();
+                    // ------------------------------------------------
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -91,7 +101,6 @@ namespace HomeServices.Controllers
             return View(request);
         }
 
-        // --- التعديل المحوري هنا (المهمة 4) ---
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -100,7 +109,6 @@ namespace HomeServices.Controllers
                 .Include(r => r.Category)
                 .Include(r => r.Customer)
                 .Include(r => r.Provider)
-                // سحب العروض ومعاها البروفيدر ومعاها التقييمات بتاعته
                 .Include(r => r.Offers!)
                     .ThenInclude(o => o.Provider)
                         .ThenInclude(p => p.ReviewsReceived)
@@ -147,7 +155,8 @@ namespace HomeServices.Controllers
                 UserId = provider.Id,
                 Message = "Your offer was accepted! You can now start working.",
                 TargetUrl = Url.Action("Dashboard", "Provider"),
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                IsRead = false
             });
 
             try

@@ -26,11 +26,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization(options =>
 {
-    // هنا بنعرف "سياسة" اسمها AdminOnly
-    // السياسة دي بتقول: لازم المستخدم يكون مسجل دخول، وإيميله يكون واحد من القائمة دي
-    options.AddPolicy("AdminOnly", policy => policy.RequireAssertion(context =>
-        context.User.Identity.IsAuthenticated &&
-        new[] { "admin@home.com", "manager@home.com" , "rawanarby11@gmail.com"}.Contains(context.User.Identity.Name)));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
 builder.Services.AddRazorPages();

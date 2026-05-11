@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using HomeServices.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace HomeServices.Data
 {
@@ -17,29 +18,29 @@ namespace HomeServices.Data
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ServiceOffer> ServiceOffers { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
-        // تم توحيد الاسم لـ ReviewsReceived ليتناسب مع بقية الكود في المشروع
         public DbSet<ServiceReview> ReviewsReceived { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // 1. Relationship: Request and Customer
+            // --- 1. إعداد العلاقات (Relationships) ---
+
+            // العلاقة بين الطلب والعميل
             builder.Entity<Request>()
                 .HasOne(r => r.Customer)
                 .WithMany(u => u.CustomerRequests)
                 .HasForeignKey(r => r.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 2. Relationship: Request and Provider
+            // العلاقة بين الطلب ومقدم الخدمة
             builder.Entity<Request>()
                 .HasOne(r => r.Provider)
                 .WithMany(u => u.ProviderTasks)
                 .HasForeignKey(r => r.ServiceProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 3. Bidding System Configuration
+            // نظام المزايدات (Offers)
             builder.Entity<ServiceOffer>()
                 .HasOne(so => so.Request)
                 .WithMany(r => r.Offers)
@@ -52,29 +53,68 @@ namespace HomeServices.Data
                 .HasForeignKey(so => so.ServiceProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // --- 4. Reputation System Configuration (الأسماء المحدثة) ---
-
-            // ربط التقييم بالعميل (الذي كتب التقييم)
+            // نظام التقييمات (Reviews)
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.Customer)
                 .WithMany(u => u.ReviewsGiven)
                 .HasForeignKey(sr => sr.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ربط التقييم بمقدم الخدمة (الذي استلم التقييم)
-            // ملاحظة: تم تعديل sr.Provider ليكون sr.ServiceProvider ليتطابق مع الموديل الجديد
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.ServiceProvider)
                 .WithMany(u => u.ReviewsReceived)
                 .HasForeignKey(sr => sr.ServiceProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ربط التقييم بالطلب (Cascade delete)
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.Request)
                 .WithMany()
                 .HasForeignKey(sr => sr.RequestId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+
+            // --- 2. نظام زرع بيانات الأدمن (Admin Data Seeding) ---
+
+            string adminRoleId = "9f7f9035-7d52-474c-836e-d90390f70154";
+            string adminUserId = "b74ddd14-6340-4840-95c2-db12554843e5";
+
+            // زرع دور الأدمن
+            builder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Id = adminRoleId,
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            });
+
+            // إنشاء يوزر الأدمن
+            var adminUser = new ApplicationUser
+            {
+                Id = adminUserId,
+                UserName = "admin@home.com",
+                NormalizedUserName = "ADMIN@HOME.COM",
+                Email = "admin@home.com",
+                NormalizedEmail = "ADMIN@HOME.COM",
+                EmailConfirmed = true,
+                FullName = "System Admin",
+                IsVerified = true, // الأدمن موثق تلقائياً
+                CreatedAt = DateTime.Now,
+                WalletBalance = 0.00m, // تصفير المحفظة للبدء من الصفر
+                SecurityStamp = Guid.NewGuid().ToString()
+            };
+
+            // تشفير كلمة المرور
+            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin123!");
+
+            // زرع يوزر الأدمن
+            builder.Entity<ApplicationUser>().HasData(adminUser);
+
+            // ربط يوزر الأدمن بدور الـ Admin
+            builder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
+            {
+                RoleId = adminRoleId,
+                UserId = adminUserId
+            });
         }
     }
 }

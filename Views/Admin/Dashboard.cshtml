@@ -1,112 +1,179 @@
-﻿@model IEnumerable<HomeServices.Models.Request>
+﻿@using HomeServices.Models
+@model IEnumerable<HomeServices.Models.Request>
 
 @{
-    ViewData["Title"] = "Admin Dashboard";
-    var complaints = ViewBag.Complaints as IEnumerable<HomeServices.Models.Complaint>;
+    ViewData["Title"] = "Admin Panel";
+
+    // التعديل هنا: التأكد من عمل Cast صحيح والتعامل مع الـ Null
+    var complaints = ViewBag.Complaints as IEnumerable<Complaint> ?? new List<Complaint>();
+    var providers = ViewBag.Providers as IEnumerable<ApplicationUser> ?? new List<ApplicationUser>();
+    var customers = ViewBag.Customers as IEnumerable<ApplicationUser> ?? new List<ApplicationUser>();
 }
 
 <div class="container mt-4">
-    <h2 class="text-center mb-4">System Management Dashboard</h2>
+    <h2 class="mb-4 fw-bold text-dark"><i class="bi bi-speedometer2 me-2"></i> System Administration</h2>
 
-    <!-- Current Orders Section -->
-    <div class="card shadow mb-5">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Current Orders</h4>
+    <div class="row mb-4 animate__animated animate__fadeInDown text-center">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white shadow-sm border-0 h-100">
+                <div class="card-body px-1">
+                    <h6 class="text-uppercase small" style="font-size: 0.7rem;">Total Customers</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalCustomers</h3>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.Id</td>
-                            <td>@item.Customer?.UserName</td>
-                            <td>@item.Category?.Name</td>
-                            <td>@item.CreatedAt.ToShortDateString()</td>
-                            <td>
-                                <span class="badge @(item.Status == "Accepted" ? "bg-success" : item.Status == "Cancelled by Admin" ? "bg-danger" : "bg-info")">
-                                    @item.Status
-                                </span>
-                            </td>
-                            <td>
-                                @if (item.Status == "Pending")
-                                {
-                                    <a asp-action="CancelRequest" asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Are you sure you want to reject this order?')">
-                                        Reject Order
-                                    </a>
-                                }
-                                else if (item.Status == "Cancelled by Admin")
-                                {
-                                    <span class="badge bg-secondary">Rejected by Admin</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">In Progress or Completed</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark shadow-sm border-0 h-100">
+                <div class="card-body px-1">
+                    <h6 class="text-uppercase small" style="font-size: 0.7rem;">Pending Providers</h6>
+                    <h3 class="fw-bold">@ViewBag.PendingProviders</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white shadow-sm border-0 h-100">
+                <div class="card-body px-1">
+                    <h6 class="text-uppercase small" style="font-size: 0.7rem;">Open Complaints</h6>
+                    <h3 class="fw-bold">@ViewBag.OpenComplaints</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white shadow-sm border-0 h-100">
+                <div class="card-body px-1">
+                    <h6 class="text-uppercase small" style="font-size: 0.7rem;">Total Orders</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalOrders</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-info shadow-sm border-0 h-100 border-start border-info border-4">
+                <div class="card-body">
+                    <h6 class="text-uppercase small">Total Platform Earnings (10%)</h6>
+                    <h3 class="fw-bold">@ViewBag.AdminWallet.ToString("C")</h3>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Complaints & Issues Section -->
-    <div class="card shadow">
-        <div class="card-header bg-danger text-white">
-            <h4 class="mb-0">Complaints & Issues</h4>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white p-3">
+            <ul class="nav nav-pills card-header-pills" id="adminTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-orders">Orders</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-complaints">Complaints</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-providers">Providers Control</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-customers">Customers List</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-earnings"><i class="bi bi-cash-stack me-1"></i> Earnings</button></li>
+            </ul>
         </div>
+
         <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Email</th>
-                        <th>Title</th>
-                        <th>Details</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (complaints != null)
-                    {
-                        @foreach (var comp in complaints)
-                        {
-                            <tr>
-                                <td>@comp.CreatedAt.ToShortDateString()</td>
-                                <td>@comp.UserEmail</td>
-                                <td>@comp.Title</td>
-                                <td>@comp.Description</td>
-                                <td>
-                                    <span class="badge @(comp.Status == "Solved" ? "bg-success" : "bg-warning text-dark")">
-                                        @(comp.Status == "Solved" ? "Solved" : "Pending")
-                                    </span>
-                                </td>
-                                <td>
-                                    @if (comp.Status != "Solved")
-                                    {
-                                        <a asp-action="ResolveComplaint" asp-route-id="@comp.Id"
-                                           class="btn btn-sm btn-success">Mark as Solved</a>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-orders">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light"><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>#@item.Id</td>
+                                    <td>@item.Customer?.FullName</td>
+                                    <td>@item.Category?.Name</td>
+                                    <td><span class="badge @(item.Status == "Cancelled by Admin" ? "bg-danger" : "bg-info")">@item.Status</span></td>
+                                    <td>
+                                        @if (item.Status == "Pending")
+                                        {
+                                            <a asp-action="CancelRequest" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Reject</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="tab-complaints">
+                    <table class="table align-middle">
+                        <thead class="table-light"><tr><th>Date</th><th>Email</th><th>Title</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            @foreach (var c in complaints)
+                            {
+                                <tr>
+                                    <td>@c.CreatedAt.ToShortDateString()</td>
+                                    <td>@c.UserEmail</td>
+                                    <td>@c.Title</td>
+                                    <td><span class="badge @(c.Status == "Solved" ? "bg-success" : "bg-warning text-dark")">@c.Status</span></td>
+                                    <td>
+                                        @if (c.Status != "Solved")
+                                        {
+                                            <a asp-action="ResolveComplaint" asp-route-id="@c.Id" class="btn btn-sm btn-success">Mark Solved</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="tab-providers">
+                    <table class="table align-middle">
+                        <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Status</th><th>Control</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in providers)
+                            {
+                                <tr>
+                                    <td>@p.FullName</td>
+                                    <td>@p.Email</td>
+                                    <td>
+                                        <span class="badge @(p.IsVerified ? "bg-success" : "bg-warning text-dark")">
+                                            @(p.IsVerified ? "Verified" : "Pending Approval")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!p.IsVerified)
+                                        {
+                                            <a asp-action="VerifyProvider" asp-route-id="@p.Id" class="btn btn-sm btn-success">Approve & Notify</a>
+                                        }
+                                        <a asp-action="DeleteUser" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this provider?')">Remove</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="tab-customers">
+                    <table class="table align-middle">
+                        <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Joined Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            @foreach (var cust in customers)
+                            {
+                                <tr>
+                                    <td>@cust.FullName</td>
+                                    <td>@cust.Email</td>
+                                    <td>@cust.CreatedAt.ToShortDateString()</td>
+                                    <td>
+                                        <a asp-action="DeleteUser" asp-route-id="@cust.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this customer?')">Remove Account</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="tab-earnings">
+                    <div class="text-center py-5">
+                        <div class="display-1 text-success mb-3"><i class="bi bi-wallet2"></i></div>
+                        <h4 class="text-muted">Current Platform Balance</h4>
+                        <h1 class="display-4 fw-bold text-dark">@ViewBag.AdminWallet.ToString("C")</h1>
+                        <p class="text-muted mt-3">This balance represents the 10% commission collected from all completed services.</p>
+                        <hr class="w-50 mx-auto" />
+                        <div class="alert alert-info d-inline-block mt-3">
+                            <i class="bi bi-info-circle me-2"></i> Commissions are automatically added upon service completion.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

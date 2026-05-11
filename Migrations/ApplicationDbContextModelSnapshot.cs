@@ -57,6 +57,9 @@ namespace HomeServices.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -110,6 +113,29 @@ namespace HomeServices.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "b74ddd14-6340-4840-95c2-db12554843e5",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "5aec0fca-7dba-4e75-a383-abbd71ad4c5a",
+                            CreatedAt = new DateTime(2026, 5, 11, 21, 58, 31, 563, DateTimeKind.Local).AddTicks(3786),
+                            Email = "admin@home.com",
+                            EmailConfirmed = true,
+                            FullName = "System Admin",
+                            IsVerified = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@HOME.COM",
+                            NormalizedUserName = "ADMIN@HOME.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAELo3VeBABA8rx9aIjiPRZ7W3YuBjYq3xhDjlxev/NV+ukbwgAZOQjMHNodrYHMJuWw==",
+                            PhoneNumberConfirmed = false,
+                            ProfilePicture = "default-user.png",
+                            SecurityStamp = "f3428183-9b0d-46b3-8537-36dc0ffe1c45",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@home.com",
+                            WalletBalance = 0.00m
+                        });
                 });
 
             modelBuilder.Entity("HomeServices.Models.Category", b =>
@@ -356,6 +382,14 @@ namespace HomeServices.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "9f7f9035-7d52-474c-836e-d90390f70154",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -443,6 +477,13 @@ namespace HomeServices.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "b74ddd14-6340-4840-95c2-db12554843e5",
+                            RoleId = "9f7f9035-7d52-474c-836e-d90390f70154"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

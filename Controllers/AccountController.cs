@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
@@ -15,7 +14,6 @@ namespace HomeServices.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
-        // إضافة البيئة للوصول لمجلد wwwroot
         private readonly IWebHostEnvironment _webHostEnvironment;
 
         public AccountController(UserManager<ApplicationUser> userManager,
@@ -49,6 +47,7 @@ namespace HomeServices.Controllers
                     return View(model);
                 }
 
+                // تنظيف النصوص من المسافات الزائدة
                 string cleanName = System.Text.RegularExpressions.Regex.Replace(model.FullName.Trim(), @"\s+", " ");
                 string cleanAddress = System.Text.RegularExpressions.Regex.Replace(model.Address.Trim(), @"\s+", " ");
 
@@ -60,10 +59,17 @@ namespace HomeServices.Controllers
                     Address = cleanAddress,
                     PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.Now,
+
+                    // --- التعديل الجوهري هنا ---
+                    // العميل يبدأ بـ 1000، والبروفايدر أو أي دور آخر يبدأ بـ 0
                     WalletBalance = model.Role == "Customer" ? 1000.00m : 0.00m,
+
+                    // البروفايدر يبدأ غير موثق والعميل موثق تلقائياً (أو حسب رغبتك)
+                    IsVerified = model.Role == "Customer",
+
                     Bio = model.Role == "ServiceProvider" ? "Professional service provider ready to help!" : null,
                     Specialty = model.Role == "ServiceProvider" ? "General Maintenance" : null,
-                    ProfilePicture = "default-user.png" // تعيين الصورة الافتراضية عند التسجيل
+                    ProfilePicture = "default-user.png"
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -75,6 +81,9 @@ namespace HomeServices.Controllers
 
                     await _userManager.AddToRoleAsync(user, model.Role);
                     await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    // توجيه ذكي بعد التسجيل مباشرة
+                    if (model.Role == "Admin") return RedirectToAction("Dashboard", "Admin");
                     return RedirectToAction("Index", "Home");
                 }
                 foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
@@ -83,7 +92,7 @@ namespace HomeServices.Controllers
         }
 
         // ==========================================
-        // 2. تسجيل الدخول والخروج (Login & Logout)
+        // 2. تسجيل الدخول (Login) مع التوجيه للأدمن
         // ==========================================
         [HttpGet]
         public IActionResult Login() => View();
@@ -95,7 +104,18 @@ namespace HomeServices.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded) return RedirectToAction("Index", "Home");
+                if (result.Succeeded)
+                {
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+
+                    // إذا كان أدمن، يفتح الداش بورد فوراً
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        return RedirectToAction("Dashboard", "Admin");
+                    }
+
+                    return RedirectToAction("Index", "Home");
+                }
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
             return View(model);
@@ -109,17 +129,18 @@ namespace HomeServices.Controllers
         }
 
         // ==========================================
-        // 3. عرض الملف الشخصي (Profile)
+        // 3. عرض وتعديل الملف الشخصي (Profile)
         // ==========================================
         [Authorize]
         public async Task<IActionResult> Profile(string id)
         {
-            var userId = string.IsNullOrEmpty(id) ? _userManager.GetUserId(User) : id;
-            if (userId == null) return RedirectToAction("Login");
+            // منع الأدمن من دخول صفحة البروفايل العادية
+            if (User.IsInRole("Admin") && string.IsNullOrEmpty(id))
+                return RedirectToAction("Dashboard", "Admin");
 
+            var userId = string.IsNullOrEmpty(id) ? _userManager.GetUserId(User) : id;
             var user = await _context.Users
-                .Include(u => u.ReviewsReceived)
-                    .ThenInclude(r => r.Customer)
+                .Include(u => u.ReviewsReceived).ThenInclude(r => r.Customer)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return NotFound();
@@ -130,13 +151,12 @@ namespace HomeServices.Controllers
             return View(user);
         }
 
-        // ==========================================
-        // 4. تعديل الملف الشخصي (Edit Profile) - مع دعم رفع الصور
-        // ==========================================
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
+            if (User.IsInRole("Admin")) return RedirectToAction("Dashboard", "Admin");
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
@@ -154,7 +174,6 @@ namespace HomeServices.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            // 1. تحديث البيانات النصية
             user.Address = address ?? user.Address;
             user.PhoneNumber = phoneNumber ?? user.PhoneNumber;
 
@@ -164,28 +183,20 @@ namespace HomeServices.Controllers
                 user.Specialty = specialty;
             }
 
-            // 2. منطق رفع الصورة
             if (profilePic != null && profilePic.Length > 0)
             {
-                // مسار المجلد (تأكدي أنه img كما في الصورة)
                 string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "img");
-
-                // إنشاء اسم فريد للملف
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + profilePic.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // حفظ الملف فعلياً
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await profilePic.CopyToAsync(fileStream);
                 }
-
-                // حفظ الاسم في الداتا بيز (اختياري: يمكنك مسح الصورة القديمة هنا لو أردتِ)
                 user.ProfilePicture = uniqueFileName;
             }
 
             var result = await _userManager.UpdateAsync(user);
-
             if (result.Succeeded)
             {
                 TempData["Success"] = "Your profile has been updated successfully!";
@@ -193,9 +204,6 @@ namespace HomeServices.Controllers
             }
 
             foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            ViewBag.UserRole = userRoles.FirstOrDefault();
             return View(user);
         }
     }
