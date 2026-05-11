@@ -33,4 +33,4 @@
 * **System Stability:** Performed a comprehensive **End-to-End (E2E) Test**; the entire platform is 100% functional and stable.
 
 ---
-*Verified and Tested by [Your Name/Team]* 🏆
+*Verified and Tested by [ٍShahd Ashraf]* 🏆
