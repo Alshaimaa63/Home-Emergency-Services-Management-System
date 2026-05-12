@@ -3,118 +3,131 @@
     ViewData["Title"] = "Service History";
 }
 
-@* تأكدي من إضافة رقم نسخة للـ CSS لضمان تحديث الشكل *@
-<link rel="stylesheet" href="~/css/history.css?v=1.2" />
+<link rel="stylesheet" href="~/css/history.css?v=1.3" />
 
-<div class="history-bg">
+<div class="history-bg py-5">
     <div class="container">
-        <div class="mb-5 text-start animate__animated animate__fadeIn">
-            <h1 class="fw-bold mb-1" style="color: #1a237e;">Service History</h1>
-            <p class="text-muted">Review your past maintenance records and track ongoing services.</p>
+        <div class="d-flex justify-content-between align-items-end mb-5 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-1" style="color: #1a237e;">Service History</h1>
+                <p class="text-muted mb-0">Review your past maintenance records and track ongoing services.</p>
+            </div>
+            <a asp-controller="Requests" asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="fas fa-plus me-2"></i>New Request
+            </a>
         </div>
 
-        <div class="row g-4 mb-5 animate__animated animate__fadeInUp">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex justify-content-between mb-2">
-                        <i class="fas fa-check-circle text-success fs-4"></i>
-                        <span class="text-success small fw-bold">+@ViewBag.CompletedCount this month</span>
-                    </div>
-                    <div class="stat-val">@ViewBag.CompletedCount.ToString("00")</div>
-                    <div class="text-muted small fw-bold text-uppercase">Completed Jobs</div>
+        <div class="row g-4 mb-5 text-center animate__animated animate__fadeInUp">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
+                    <i class="fas fa-check-double fa-2x text-success mb-3"></i>
+                    <h6 class="text-muted fw-bold small text-uppercase">Completed Jobs</h6>
+                    <h2 class="fw-bold text-dark">@ViewBag.CompletedCount.ToString("00")</h2>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="d-flex justify-content-between mb-2">
-                        <i class="fas fa-tasks text-primary fs-4"></i>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill">Active</span>
-                    </div>
-                    <div class="stat-val">@ViewBag.InProgressCount.ToString("00")</div>
-                    <div class="text-muted small fw-bold text-uppercase">In Progress</div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
+                    <i class="fas fa-spinner fa-2x text-primary mb-3"></i>
+                    <h6 class="text-muted fw-bold small text-uppercase">In Progress</h6>
+                    <h2 class="fw-bold text-dark">@ViewBag.InProgressCount.ToString("00")</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #00bcd4 !important; border-radius: 15px;">
+                    <i class="fas fa-wallet fa-2x text-info mb-3"></i>
+                    <h6 class="text-muted fw-bold small text-uppercase">Total Spent</h6>
+                    <h2 class="fw-bold text-dark">@(Model.Sum(r => r.FinalPrice ?? 0).ToString("C0"))</h2>
                 </div>
             </div>
         </div>
 
-        <div class="custom-table-container animate__animated animate__fadeInUp animate__delay-1s">
-            <table class="table mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">Service Provider</th>
-                        <th>Date</th>
-                        <th>Service Type</th>
-                        <th>Status</th>
-                        <th>Cost</th>
-                        <th class="text-end pe-4">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center">
-                                    @* اللمسة السحرية: Letter Avatar *@
-                                    <div class="avatar-circle">
-                                        @(string.IsNullOrEmpty(item.Provider?.FullName) ? "A" : item.Provider.FullName.Substring(0, 1))
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">@(item.Provider?.FullName ?? "Assigning Provider...")</div>
-                                        <div class="text-muted small">Specialist</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-                            <td>
-                                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
-                                    @item.Category.Name
-                                </span>
-                            </td>
-                            <td>
-                                @* استخدام الـ Pill Badges الجديدة *@
-                                <div class="badge-ui status-@item.Status.ToLower().Replace(" ", "")">
-                                    <span class="status-dot"></span> @item.Status
-                                </div>
-                            </td>
-                            <td class="fw-bold" style="color: #1a237e;">
-                                @* حل مشكلة الـ Nullable decimal والـ ToString *@
-                                @(item.FinalPrice.HasValue && item.FinalPrice.Value > 0 ? item.FinalPrice.Value.ToString("C") : "--")
-                            </td>
-                            <td class="text-end pe-4 ActionCell">
-                                <div class="dropdown">
-                                    <button class="btn btn-action-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                        <li>
-                                            <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">
-                                                <i class="far fa-eye me-2"></i> Details
-                                            </a>
-                                        </li>
+        <div class="card border-0 shadow-lg animate__animated animate__fadeInUp animate__delay-1s" style="border-radius: 20px;">
+            <div class="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0 text-dark">
+                    <i class="fas fa-history me-2 text-primary"></i>Recent Service Activity
+                </h4>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Service & Provider</th>
+                                <th>Date</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Cost</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3">
+                                                @(item.Provider?.FullName?.Substring(0, 1) ?? "A")
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">@(item.Provider?.FullName ?? "Assigning...")</div>
+                                                <div class="text-muted small">Specialist</div>
+                                            </div>
+                                        </div>
+                                    </td>
 
-                                        @if (item.Status == "Pending")
-                                        {
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item text-primary" asp-action="Edit" asp-route-id="@item.Id">
-                                                    <i class="far fa-edit me-2"></i> Edit Request
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            @if (!Model.Any())
-            {
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-light mb-3"></i>
-                    <p class="text-muted">You haven't made any requests yet.</p>
+                                    <td class="text-muted">
+                                        @item.CreatedAt.ToString("MMM dd, yyyy")
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-medium">
+                                            @item.Category.Name
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @{ var statusClass = item.Status == "Completed" ? "status-completed" : "status-pending"; }
+                                        <div class="badge-ui @statusClass">
+                                            <span class="status-dot"></span>
+                                            @item.Status
+                                        </div>
+                                    </td>
+
+                                    <td class="fw-bold text-dark">
+                                        @(item.FinalPrice.HasValue ? $"${item.FinalPrice.Value:N2}" : "--")
+                                    </td>
+
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn-action-circle no-border" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                                <li>
+                                                    <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">
+                                                        <i class="far fa-eye me-2 text-primary"></i> View Details
+                                                    </a>
+                                                </li>
+
+                                                @* Only show Edit if the service is still in a draft/new state *@
+                                                @if (item.Status != "Completed" && item.Status == "Pending") 
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">
+                                                            <i class="far fa-edit me-2 text-warning"></i> Edit Request
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            }
+            </div>
         </div>
     </div>
 </div>
