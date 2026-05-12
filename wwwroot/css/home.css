@@ -1,4 +1,10 @@
-﻿/* Hero Section - Restored with Background Image */
+﻿/* --- Global Brand Colors --- */
+:root {
+    --brand-navy: #1a237e;
+    --brand-cyan: #00bcd4;
+}
+
+/* --- Hero Section --- */
 .hero-section {
     position: relative;
     padding: 160px 0;
@@ -10,7 +16,7 @@
 }
 
 .hero-title {
-    color: #1a237e;
+    color: var(--brand-navy);
     font-weight: 800;
     font-size: 4.5rem;
     letter-spacing: -1.5px;
@@ -18,18 +24,17 @@
     margin-bottom: 20px;
 }
 
-/* تعديل الـ Subtitle ليكون أنيقاً ويدعم السطور المتعددة */
 .hero-subtitle {
     color: #333;
     font-size: 1.2rem;
     max-width: 750px;
     margin: 0 auto 40px auto;
-    font-weight: 300; /* جعلنا الخط رفيعاً بشكل افتراضي */
-    line-height: 1.8; /* لفك اشتباك السطور */
+    font-weight: 300;
+    line-height: 1.8;
     opacity: 0.9;
 }
 
-/* Search Bar - High Contrast */
+/* --- Search & Buttons --- */
 .search-bar-container {
     max-width: 650px;
     margin: 40px auto;
@@ -49,9 +54,8 @@
         border-radius: 50px 0 0 50px;
     }
 
-/* ستايل زرار البحث وزرار المهام الموحد */
 .btn-find {
-    background-color: #1a237e;
+    background-color: var(--brand-navy);
     color: white;
     border: none;
     padding: 0 40px;
@@ -65,33 +69,24 @@
 }
 
     .btn-find:hover {
-        background-color: #00bcd4;
+        background-color: var(--brand-cyan);
         color: white;
         transform: translateY(-2px);
     }
 
-/* ستايل خاص لزرار المهام الأبيض الخاص بالبروفيدر */
-.btn-mission-white {
-    background: white !important;
-    color: #1a237e !important;
+/* Specific button style for Providers */
+.btn-provider-mission {
+    background-color: #0dcaf0; /* btn-info equivalent */
+    color: white;
+    padding: 15px 48px;
+    font-weight: bold;
     border-radius: 50px;
-    padding: 15px 45px;
-    font-weight: 800;
-    font-size: 1.1rem;
-    border: none;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    transition: 0.3s;
-    display: inline-block;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-decoration: none;
+    display: inline-block;
 }
 
-    .btn-mission-white:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-        background: #f8f9fa !important;
-    }
-
-/* Service Cards - Hover & Pointer Fix */
+/* --- Service Cards --- */
 .service-card {
     border-radius: 20px;
     overflow: hidden;
@@ -101,16 +96,16 @@
     cursor: pointer;
 }
 
-    .service-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-    }
+.service-img {
+    width: 100%;
+    height: 250px; /* Kept from original inline style */
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
 
-    .service-card:hover img {
-        transform: scale(1.1);
-    }
+.service-card:hover .service-img {
+    transform: scale(1.1);
+}
 
 .service-card-overlay {
     position: absolute;
@@ -128,7 +123,11 @@
     background: linear-gradient(to top, rgba(0, 188, 212, 0.8) 0%, transparent 80%);
 }
 
-/* Features */
+/* --- Features Section --- */
+.section-heading {
+    color: var(--brand-navy);
+}
+
 .feature-box {
     padding: 40px;
     border-radius: 20px;
@@ -140,3 +139,15 @@
         transform: translateY(-10px);
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    background: var(--brand-navy);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto 1rem; /* Added centering and spacing */
+}
