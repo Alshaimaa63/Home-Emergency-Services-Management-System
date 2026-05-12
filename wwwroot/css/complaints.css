@@ -1,0 +1,70 @@
+﻿/* Enhanced Contrast Theme */
+.complaint-page-wrapper {
+    /* A slightly darker, muted grey to make the white card stand out */
+    background-color: #f0f2f5;
+    min-height: 94vh;
+    padding: 80px 0;
+}
+
+.complaint-card {
+    /* Pure white card */
+    background: #ffffff;
+    border-radius: 12px;
+    /* A thin, soft border provides contrast without the bulk of a shadow */
+    border: 1px solid #d1d9e6;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.complaint-header {
+    background: #1a237e;
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.complaint-body {
+    padding: 40px;
+}
+
+.form-label {
+    color: #1a237e;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    /* Making inputs slightly off-white so they are visible inside the white card */
+    background-color: #2f4b7414;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease-in-out;
+}
+
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: #00bcd4;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+    }
+
+.btn-submit {
+    background: #1a237e;
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    transition: 0.3s;
+}
+
+    .btn-submit:hover {
+        background: #00bcd4;
+        transform: translateY(-1px);
+    }

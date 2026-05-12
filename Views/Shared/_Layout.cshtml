@@ -135,15 +135,29 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
-                            @if (User.Identity.IsAuthenticated && User.IsInRole("Customer"))
+                            @if (User.Identity.IsAuthenticated)
                             {
+                                @* the provider dashboard  *@
+                                if (User.IsInRole("ServiceProvider"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-info" asp-controller="Provider" asp-action="Dashboard">Dashboard</a>
+                                    </li>
+                                }
+
+                                @* This part only shows if someone is logged in *@
+                                @if (User.IsInRole("Customer"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Requests" asp-action="Index">History</a>
+                                    </li>
+                                }
+
+                                @* Since it's for both Customer and Provider, we just check if Authenticated *@
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Requests" asp-action="Index">History</a>
+                                    <a class="nav-link" asp-controller="Admin" asp-action="SendComplaint">Complaints</a>
                                 </li>
                             }
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="SendComplaint">Complaints</a>
-                            </li>
                         }
                     </ul>
 
@@ -193,9 +207,7 @@
     </header>
 
     <main class="py-4">
-        <div class="container">
-            @RenderBody()
-        </div>
+        @RenderBody()
     </main>
 
     <footer class="bg-white border-top py-4 mt-auto">

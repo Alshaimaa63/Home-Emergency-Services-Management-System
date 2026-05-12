@@ -1,32 +1,54 @@
 ﻿@model HomeServices.Models.Complaint
+@{
+    ViewData["Title"] = "Report an Issue";
+}
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0 text-center">Submit a Complaint or Report</h4>
+<link rel="stylesheet" href="~/css/complaints.css" />
+
+<div class="complaint-page-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                
+                <div class="complaint-card animate__animated animate__fadeInUp">
+                    <div class="complaint-header">
+                        <h2><i class="fas fa-shield-alt me-2"></i>ServicePro Support</h2>
+                        <p class="mb-0 text-white-50">Tell us what happened, and we'll fix it.</p>
+                    </div>
+
+                    <div class="complaint-body">
+                        <form asp-action="SendComplaint" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="mb-4">
+                                <label asp-for="Title" class="form-label">Issue Summary</label>
+                                <input asp-for="Title" class="form-control" placeholder="e.g., Delayed Service" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Description" class="form-label">Detailed Explanation</label>
+                                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Please provide as much detail as possible..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+
+                            <button type="submit" class="btn-submit shadow">
+                                <i class="fas fa-paper-plane me-2"></i>Send Report
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form asp-controller="Admin" asp-action="SendComplaint" method="post">
-                        @Html.AntiForgeryToken()
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Title" class="form-label"></label>
-                            <input asp-for="Title" class="form-control" placeholder="e.g., Payment issue, Service delay..." />
-                            <span asp-validation-for="Title" class="text-danger"></span>
-                        </div>
+                <p class="text-center mt-4 text-muted small">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    Your report will be reviewed by our quality mastery team within 24 hours.
+                </p>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Description" class="form-label"></label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Please describe your problem in detail..."></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-
-                        <button type="submit" class="btn btn-danger w-100">Submit Complaint</button>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

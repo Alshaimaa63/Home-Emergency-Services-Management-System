@@ -60,12 +60,14 @@
                 string imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
 
                 if (item.Name.Contains("Plumbing")) 
-                    imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
+                    imageUrl = "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
                 else if (item.Name.Contains("Electricity")) 
                     imageUrl = "https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=800&auto=format&fit=crop";
                 else if (item.Name.Contains("Cleaning")) 
                     imageUrl = "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=800&auto=format&fit=crop";
                 else if (item.Name.Contains("Painting")) 
+                    imageUrl = "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=800&auto=format&fit=crop";
+                else if (item.Name.Contains("Carpentry")) 
                     imageUrl = "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=800&auto=format&fit=crop";
 
                 <div class="col-md-4 scroll-reveal">
@@ -119,17 +121,29 @@
 </section>
 
 @section Scripts {
-    @* Scroll animation trigger using Intersection Observer *@
     <script>
+        const observerOptions = {
+            root: null,
+            threshold: 0.1 // Triggers quickly when the top of the element hits the view
+        };
+
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+            entries.forEach((entry) => {
                 if (entry.isIntersecting) {
+                    // Apply your 0.5s delay
+                    entry.target.style.animationDelay = '0.5s';
+                    
+                    // Add the animation class
                     entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    
+                    // Stop watching this element once it has appeared
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.1 });
+        }, observerOptions);
 
-        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el);
+        });
     </script>
 }
