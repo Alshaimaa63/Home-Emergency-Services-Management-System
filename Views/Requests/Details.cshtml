@@ -81,7 +81,78 @@
                         <div class="info-value text-muted fw-normal mt-1" style="line-height: 1.6;">
                             @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
                         </div>
+                        @* ========================================== *@
+                        @* 🔥 قسم التقييم الجديد - ضيفيه هنا 🔥 *@
+                        @* ========================================== *@
+                        @if (Model.Status == "Completed")
+                        {
+                            <div class="evaluation-section mt-5 p-4 rounded-4 border shadow-sm" style="background-color: #fff9e6; border-left: 5px solid #ffc107 !important;">
+                                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-star text-warning me-2"></i> Rate the Provider</h5>
 
+                                @if (Model.ServiceReviews != null && Model.ServiceReviews.Any())
+                                {
+                                    <div class="p-3 bg-white rounded-3 border">
+                                        <div class="text-warning mb-2 fs-5">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="@(i <= Model.ServiceReviews.First().Rating ? "fas" : "far") fa-star"></i>
+                                            }
+                                        </div>
+                                        <p class="mb-0 text-muted fst-italic">"@Model.ServiceReviews.First().Comment"</p>
+                                    </div>
+                                }
+                                else if (User.IsInRole("Customer"))
+                                {
+                                    @* تأكدي أن الـ controller هو Reviews والـ action هي SubmitReview *@
+                                    <form asp-controller="Reviews" asp-action="SubmitReview" method="post">
+                                        <input type="hidden" name="RequestId" value="@Model.Id" />
+                                        <input type="hidden" name="ServiceProviderId" value="@Model.ServiceProviderId" />
+
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Rating Score (1 to 5)</label>
+                                            <div class="star-rating d-flex flex-row-reverse justify-content-end fs-3">
+                                                <input type="radio" name="Rating" value="5" id="star5" required><label for="star5" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="4" id="star4"><label for="star4" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="3" id="star3"><label for="star3" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="2" id="star2"><label for="star2" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="1" id="star1"><label for="star1" class="fas fa-star"></label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">Your Feedback</label>
+                                            <textarea name="Comment" class="form-control" rows="3" placeholder="Tell us about your experience..." required></textarea>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold text-dark">Submit Review</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+
+                        @* ستايل النجوم عشان يظهروا جنب بعض ويختفي الراديو *@
+                        <style>
+                            .star-rating input {
+                                display: none;
+                            }
+
+                            .star-rating label {
+                                color: #ddd;
+                                cursor: pointer;
+                                transition: 0.2s;
+                                padding: 0 5px;
+                            }
+
+                                .star-rating input:checked ~ label,
+                                .star-rating label:hover,
+                                .star-rating label:hover ~ label {
+                                    color: #ffc107;
+                                }
+
+                            .evaluation-section {
+                                margin-bottom: 2rem;
+                            }
+                        </style>
                         @* --- قسم تقديم العروض (للفنيين) --- *@
                         @if (User.IsInRole("ServiceProvider") && Model.Status == "Pending")
                         {

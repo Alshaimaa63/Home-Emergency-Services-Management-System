@@ -37,8 +37,9 @@ namespace HomeServices.Controllers
                 return RedirectToAction("Details", "Requests", new { id = RequestId });
             }
 
-            // 3. التأكد من عدم وجود تقييم سابق لهذا الطلب
-            var existingReview = await _context.ReviewsReceived
+            // 3. التأكد من عدم وجود تقييم سابق (باستخدام الجدول الموحد ServiceReviews)
+            // تم استبدال ReviewsReceived بـ ServiceReviews لحل الخطأ البرمجي
+            var existingReview = await _context.ServiceReviews
                 .AnyAsync(r => r.RequestId == RequestId);
 
             if (existingReview)
@@ -61,25 +62,23 @@ namespace HomeServices.Controllers
             // 5. الحفظ وإرسال الإشعار
             try
             {
-                // إضافة التقييم
-                _context.ReviewsReceived.Add(review);
+                // إضافة التقييم للجدول الموحد
+                _context.ServiceReviews.Add(review);
 
-                // --- إضافة الإشعار للفني هنا ---
+                // إضافة الإشعار للفني
                 var notification = new Notification
                 {
-                    UserId = ServiceProviderId, // الفني هو المستلم
+                    UserId = ServiceProviderId,
                     Message = $"Customer {User.Identity.Name} rated you {Rating} stars!",
-                    TargetUrl = "/Account/Profile", // يوجهه لصفحة بروفايله عشان يشوف النجوم
+                    TargetUrl = "/Account/Profile",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 };
                 _context.Notifications.Add(notification);
-                // -----------------------------
 
-                // حفظ التغييرين معاً (التقييم + الإشعار)
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "Thank you! Your review has been published and the provider has been notified.";
+                TempData["Success"] = "Thank you! Your review has been published.";
             }
             catch (Exception ex)
             {

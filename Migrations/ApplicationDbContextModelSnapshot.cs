@@ -119,8 +119,8 @@ namespace HomeServices.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "5aec0fca-7dba-4e75-a383-abbd71ad4c5a",
-                            CreatedAt = new DateTime(2026, 5, 11, 21, 58, 31, 563, DateTimeKind.Local).AddTicks(3786),
+                            ConcurrencyStamp = "2fc0fea1-4e51-4d12-8e2d-3fc90973f4d2",
+                            CreatedAt = new DateTime(2026, 5, 13, 1, 44, 45, 168, DateTimeKind.Local).AddTicks(34),
                             Email = "admin@home.com",
                             EmailConfirmed = true,
                             FullName = "System Admin",
@@ -128,10 +128,10 @@ namespace HomeServices.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@HOME.COM",
                             NormalizedUserName = "ADMIN@HOME.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAELo3VeBABA8rx9aIjiPRZ7W3YuBjYq3xhDjlxev/NV+ukbwgAZOQjMHNodrYHMJuWw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOfS7+vqnUy22utn4RC9BGLGAq1VG/QDtvZVlj29R8bbBJMBExYhakWaAVPnZzjDHg==",
                             PhoneNumberConfirmed = false,
                             ProfilePicture = "default-user.png",
-                            SecurityStamp = "f3428183-9b0d-46b3-8537-36dc0ffe1c45",
+                            SecurityStamp = "2a1419ea-c0e8-4786-84e2-4a123762a309",
                             TwoFactorEnabled = false,
                             UserName = "admin@home.com",
                             WalletBalance = 0.00m
@@ -354,7 +354,7 @@ namespace HomeServices.Migrations
 
                     b.HasIndex("ServiceProviderId");
 
-                    b.ToTable("ReviewsReceived");
+                    b.ToTable("ServiceReviews");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -570,7 +570,7 @@ namespace HomeServices.Migrations
                         .IsRequired();
 
                     b.HasOne("HomeServices.Models.Request", "Request")
-                        .WithMany()
+                        .WithMany("ServiceReviews")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -660,6 +660,8 @@ namespace HomeServices.Migrations
             modelBuilder.Entity("HomeServices.Models.Request", b =>
                 {
                     b.Navigation("Offers");
+
+                    b.Navigation("ServiceReviews");
                 });
 #pragma warning restore 612, 618
         }

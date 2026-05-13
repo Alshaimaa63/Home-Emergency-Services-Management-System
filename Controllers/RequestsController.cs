@@ -226,5 +226,50 @@ namespace HomeServices.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+
+        [HttpPost]
+        [Authorize(Roles = "ServiceProvider")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteRequest(int id)
+        {
+            // 1. جلب الطلب فقط (بدون تعقيدات اليوزر)
+            var request = await _context.Requests.FindAsync(id);
+
+            if (request == null) return NotFound();
+
+            // 2. تحديث حالة الطلب (عشان تظهر الفورم عند العميل)
+            request.Status = "Completed";
+
+            // 3. 🔥 إرسال الإشعار للعميل (ده اللي يهمنا) 🔥
+            var notification = new Notification
+            {
+                UserId = request.CustomerId, // العميل هو اللي هيستلم
+                Message = "✅ Service completed! Tap here to rate the provider.",
+                TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }), // هيوديه للصفحة اللي فيها النجوم
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
+
+            _context.Notifications.Add(notification);
+
+            // 4. حفظ التغييرات
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Order marked as completed!";
+
+            // يرجعه لصفحة الشغل بتاعته
+            return RedirectToAction("Dashboard", "Provider");
+        }
+
+
+
+
+
+
+
+
+
     }
+
 }

@@ -56,5 +56,6 @@ namespace HomeServices.Models
 
         [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public virtual ICollection<ServiceReview> ServiceReviews { get; set; } = new HashSet<ServiceReview>();
     }
 }

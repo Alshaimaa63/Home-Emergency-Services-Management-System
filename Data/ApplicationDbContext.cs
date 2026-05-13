@@ -12,19 +12,21 @@ namespace HomeServices.Data
         {
         }
 
-        // Database Tables
+        // 1. تعريف الجداول (DbSets)
         public DbSet<Category> Categories { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ServiceOffer> ServiceOffers { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<ServiceReview> ReviewsReceived { get; set; }
+
+        // تم توحيد الجدول ليكون سطر واحد فقط باسم ServiceReviews لضمان عدم التكرار
+        public DbSet<ServiceReview> ServiceReviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // --- 1. إعداد العلاقات (Relationships) ---
+            // --- إعداد العلاقات (Relationships) ---
 
             // العلاقة بين الطلب والعميل
             builder.Entity<Request>()
@@ -53,32 +55,32 @@ namespace HomeServices.Data
                 .HasForeignKey(so => so.ServiceProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // نظام التقييمات (Reviews)
+            // نظام التقييمات - ربط العميل (الذي يعطي التقييم)
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.Customer)
                 .WithMany(u => u.ReviewsGiven)
                 .HasForeignKey(sr => sr.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // نظام التقييمات - ربط مقدم الخدمة (الذي يستلم التقييم)
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.ServiceProvider)
                 .WithMany(u => u.ReviewsReceived)
                 .HasForeignKey(sr => sr.ServiceProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // الربط الصريح مع الطلب (الحل النهائي لمشكلة RequestId1)
             builder.Entity<ServiceReview>()
                 .HasOne(sr => sr.Request)
-                .WithMany()
+                .WithMany(r => r.ServiceReviews)
                 .HasForeignKey(sr => sr.RequestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
 
-            // --- 2. نظام زرع بيانات الأدمن (Admin Data Seeding) ---
-
+            // --- نظام زرع بيانات الأدمن (Admin Data Seeding) ---
             string adminRoleId = "9f7f9035-7d52-474c-836e-d90390f70154";
             string adminUserId = "b74ddd14-6340-4840-95c2-db12554843e5";
 
-            // زرع دور الأدمن
             builder.Entity<IdentityRole>().HasData(new IdentityRole
             {
                 Id = adminRoleId,
@@ -86,7 +88,6 @@ namespace HomeServices.Data
                 NormalizedName = "ADMIN"
             });
 
-            // إنشاء يوزر الأدمن
             var adminUser = new ApplicationUser
             {
                 Id = adminUserId,
@@ -96,20 +97,17 @@ namespace HomeServices.Data
                 NormalizedEmail = "ADMIN@HOME.COM",
                 EmailConfirmed = true,
                 FullName = "System Admin",
-                IsVerified = true, // الأدمن موثق تلقائياً
+                IsVerified = true,
                 CreatedAt = DateTime.Now,
-                WalletBalance = 0.00m, // تصفير المحفظة للبدء من الصفر
+                WalletBalance = 0.00m,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
 
-            // تشفير كلمة المرور
             var passwordHasher = new PasswordHasher<ApplicationUser>();
             adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin123!");
 
-            // زرع يوزر الأدمن
             builder.Entity<ApplicationUser>().HasData(adminUser);
 
-            // ربط يوزر الأدمن بدور الـ Admin
             builder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
             {
                 RoleId = adminRoleId,

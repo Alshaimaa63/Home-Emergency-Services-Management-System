@@ -38,14 +38,9 @@
                     <i class="fas fa-search me-2"></i>Find New Jobs
                 </a>
             }
-            else
-            {
-                <button class="btn btn-secondary rounded-pill px-4 shadow-sm disabled" title="Verification Required">
-                    <i class="fas fa-lock me-2"></i>Pending Verification
-                </button>
-            }
         </div>
 
+        @* --- قسم الإحصائيات --- *@
         <div class="row g-4 mb-5 text-center">
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
@@ -70,6 +65,7 @@
             </div>
         </div>
 
+        @* --- جدول المهام --- *@
         <div class="card border-0 shadow-lg" style="border-radius: 20px;">
             <div class="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-briefcase me-2 text-primary"></i>My Recent Tasks</h4>
@@ -89,21 +85,14 @@
                         <tbody>
                             @if (Model != null && Model.Any())
                             {
-                                foreach (var request in Model.Take(5))
+                                foreach (var request in Model.Take(10))
                                 {
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if (!string.IsNullOrEmpty(request.Customer?.ProfilePicture))
-                                                {
-                                                    <img src="~/img/@request.Customer.ProfilePicture" class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;" />
-                                                }
-                                                else
-                                                {
-                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-size: 12px;">
-                                                        @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
-                                                    </div>
-                                                }
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-size: 12px;">
+                                                    @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
+                                                </div>
                                                 <div>
                                                     <div class="fw-bold text-dark">@request.Category?.Name</div>
                                                     <span class="text-muted small">Client: @request.Customer?.FullName</span>
@@ -117,9 +106,23 @@
                                         </td>
                                         <td class="text-muted">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
                                         <td class="text-center">
-                                            <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-4">
-                                                View
-                                            </a>
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    Details
+                                                </a>
+
+                                                @* 🔥 التعديل هنا: زرار إنهاء المهمة 🔥 *@
+                                                @if (request.Status == "Accepted")
+                                                {
+                                                    <form asp-controller="Requests" asp-action="CompleteRequest" method="post" style="display:inline;">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@request.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" onclick="return confirm('Mark this job as finished?')">
+                                                            <i class="fas fa-check me-1"></i> Finish
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -142,6 +145,7 @@
 </div>
 
 <style>
+    /* ستايلاتك الأصلية */
     .table thead th {
         font-size: 0.85rem;
         text-transform: uppercase;

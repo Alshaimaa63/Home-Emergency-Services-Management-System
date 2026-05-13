@@ -260,42 +260,6 @@ namespace HomeServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ReviewsReceived",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ServiceProviderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RequestId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReviewsReceived", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReviewsReceived_AspNetUsers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ReviewsReceived_AspNetUsers_ServiceProviderId",
-                        column: x => x.ServiceProviderId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ReviewsReceived_Requests_RequestId",
-                        column: x => x.RequestId,
-                        principalTable: "Requests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ServiceOffers",
                 columns: table => new
                 {
@@ -325,6 +289,42 @@ namespace HomeServices.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ServiceReviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ServiceProviderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequestId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceReviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceReviews_AspNetUsers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ServiceReviews_AspNetUsers_ServiceProviderId",
+                        column: x => x.ServiceProviderId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ServiceReviews_Requests_RequestId",
+                        column: x => x.RequestId,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -333,7 +333,7 @@ namespace HomeServices.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "Address", "Bio", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FullName", "IsVerified", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicture", "SecurityStamp", "Specialty", "TwoFactorEnabled", "UserName", "WalletBalance" },
-                values: new object[] { "b74ddd14-6340-4840-95c2-db12554843e5", 0, null, null, "5aec0fca-7dba-4e75-a383-abbd71ad4c5a", new DateTime(2026, 5, 11, 21, 58, 31, 563, DateTimeKind.Local).AddTicks(3786), "admin@home.com", true, "System Admin", true, false, null, "ADMIN@HOME.COM", "ADMIN@HOME.COM", "AQAAAAIAAYagAAAAELo3VeBABA8rx9aIjiPRZ7W3YuBjYq3xhDjlxev/NV+ukbwgAZOQjMHNodrYHMJuWw==", null, false, "default-user.png", "f3428183-9b0d-46b3-8537-36dc0ffe1c45", null, false, "admin@home.com", 0.00m });
+                values: new object[] { "b74ddd14-6340-4840-95c2-db12554843e5", 0, null, null, "2fc0fea1-4e51-4d12-8e2d-3fc90973f4d2", new DateTime(2026, 5, 13, 1, 44, 45, 168, DateTimeKind.Local).AddTicks(34), "admin@home.com", true, "System Admin", true, false, null, "ADMIN@HOME.COM", "ADMIN@HOME.COM", "AQAAAAIAAYagAAAAEOfS7+vqnUy22utn4RC9BGLGAq1VG/QDtvZVlj29R8bbBJMBExYhakWaAVPnZzjDHg==", null, false, "default-user.png", "2a1419ea-c0e8-4786-84e2-4a123762a309", null, false, "admin@home.com", 0.00m });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -400,21 +400,6 @@ namespace HomeServices.Migrations
                 column: "ServiceProviderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReviewsReceived_CustomerId",
-                table: "ReviewsReceived",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ReviewsReceived_RequestId",
-                table: "ReviewsReceived",
-                column: "RequestId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ReviewsReceived_ServiceProviderId",
-                table: "ReviewsReceived",
-                column: "ServiceProviderId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ServiceOffers_RequestId",
                 table: "ServiceOffers",
                 column: "RequestId");
@@ -422,6 +407,21 @@ namespace HomeServices.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceOffers_ServiceProviderId",
                 table: "ServiceOffers",
+                column: "ServiceProviderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceReviews_CustomerId",
+                table: "ServiceReviews",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceReviews_RequestId",
+                table: "ServiceReviews",
+                column: "RequestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceReviews_ServiceProviderId",
+                table: "ServiceReviews",
                 column: "ServiceProviderId");
         }
 
@@ -450,10 +450,10 @@ namespace HomeServices.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
-                name: "ReviewsReceived");
+                name: "ServiceOffers");
 
             migrationBuilder.DropTable(
-                name: "ServiceOffers");
+                name: "ServiceReviews");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

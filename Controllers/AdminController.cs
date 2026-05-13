@@ -166,7 +166,7 @@ namespace HomeServices.Controllers
             if (ModelState.IsValid)
             {
                 review.CreatedAt = DateTime.Now;
-                _context.ReviewsReceived.Add(review);
+                _context.ServiceReviews.Add(review);
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Thank you for your feedback!";

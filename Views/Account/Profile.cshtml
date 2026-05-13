@@ -1,9 +1,13 @@
 ﻿@model HomeServices.Models.ApplicationUser
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "My Profile";
     var walletColor = Model.WalletBalance > 0 ? "text-success" : "text-dark";
     bool isProvider = ViewBag.UserRole == "ServiceProvider";
+
+    // جلب الـ ID بتاع اليوزر اللي فاتح المتصفح حالياً
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
     // حسابات التقييم الديناميكية
     var reviewsCount = Model.ReviewsReceived?.Count() ?? 0;
@@ -25,10 +29,15 @@
     <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
             <h4 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Personal Profile</h4>
+
+            @* 🔥 التعديل الجوهري هنا: الزرار يظهر فقط لصاحب البروفايل 🔥 *@
             <div class="d-flex align-items-center gap-3">
-                <a asp-action="EditProfile" asp-controller="Account" class="btn btn-sm btn-outline-light rounded-pill px-3 shadow-sm">
-                    <i class="bi bi-pencil-square me-1"></i> Edit Info
-                </a>
+                @if (Model.Id == currentUserId)
+                {
+                    <a asp-action="EditProfile" asp-controller="Account" class="btn btn-sm btn-outline-light rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Info
+                    </a>
+                }
                 <span class="badge bg-success fs-6 shadow-sm">Balance: @Model.WalletBalance.ToString("C")</span>
             </div>
         </div>
@@ -37,7 +46,6 @@
             <div class="row">
                 <div class="col-md-4 text-center border-md-end mb-4 mb-md-0">
                     <div class="position-relative d-inline-block mb-3">
-                        @* --- تعديل المسار ليعمل مع مجلد img --- *@
                         @if (!string.IsNullOrEmpty(Model.ProfilePicture))
                         {
                             <img src="~/img/@Model.ProfilePicture"
@@ -47,7 +55,6 @@
                         }
                         else
                         {
-                            @* في حال عدم وجود صورة، نعرض default-user.png من مجلد img *@
                             <img src="~/img/default-user.png"
                                  class="rounded-circle shadow border border-4 border-white"
                                  style="width: 150px; height: 150px; object-fit: cover;"
@@ -80,12 +87,9 @@
                                     {
                                         <i class="far fa-star text-secondary"></i>
                                     }
-                                    <div class="small text-muted mt-1">New Member - No ratings yet</div>
+                                    <div class="small text-muted mt-1">No ratings yet</div>
                                 }
                             </div>
-                            <p class="text-primary fw-bold small text-uppercase tracking-wider">
-                                <i class="bi bi-patch-check-fill me-1"></i>@(Model.Specialty ?? "Verified Provider")
-                            </p>
                         </div>
                     }
                 </div>
@@ -114,7 +118,7 @@
                     {
                         <div class="mt-4 p-3 bg-white border-start border-primary border-4 rounded shadow-sm italic-box">
                             <h6 class="text-uppercase text-muted small fw-bold mb-2"><i class="bi bi-person-lines-fill me-2"></i>About Me</h6>
-                            <p class="mb-0 fst-italic text-secondary">@(Model.Bio ?? "This provider hasn't added a biography yet.")</p>
+                            <p class="mb-0 fst-italic text-secondary">@(Model.Bio ?? "No bio available.")</p>
                         </div>
                     }
 
@@ -128,7 +132,7 @@
                                 <h4 class="mb-0 @walletColor fw-bold">@Model.WalletBalance.ToString("C")</h4>
                                 <small class="text-muted fw-medium">
                                     <i class="bi bi-info-circle-fill me-1"></i>
-                                    @(isProvider ? "Total earnings accumulated from your services" : "Balance available for booking home services")
+                                    @(isProvider ? "Your service earnings" : "Available balance for bookings")
                                 </small>
                             </div>
                         </div>
@@ -136,43 +140,33 @@
                 </div>
             </div>
 
-            @if (isProvider)
+            @if (isProvider && reviewsCount > 0)
             {
                 <hr class="my-5 opacity-25" />
                 <div class="row px-3">
                     <h5 class="text-muted mb-4"><i class="bi bi-chat-left-heart me-2"></i>Recent Customer Reviews</h5>
-                    @if (reviewsCount > 0)
-                    {
-                        <div class="row g-3">
-                            @foreach (var review in Model.ReviewsReceived.OrderByDescending(r => r.CreatedAt))
-                            {
-                                <div class="col-md-6">
-                                    <div class="card h-100 border-0 bg-light shadow-sm hover-card">
-                                        <div class="card-body">
-                                            <div class="text-warning mb-2 small">
-                                                @for (int i = 1; i <= 5; i++)
-                                                {
-                                                    <i class="@(i <= review.Rating ? "fas fa-star text-warning" : "far fa-star text-secondary")"></i>
-                                                }
-                                            </div>
-                                            <p class="card-text text-dark">"@review.Comment"</p>
-                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                                                <span class="fw-bold small"><i class="bi bi-person-check me-1"></i>@review.Customer?.FullName</span>
-                                                <span class="text-muted x-small">@review.CreatedAt.ToShortDateString()</span>
-                                            </div>
+                    <div class="row g-3">
+                        @foreach (var review in Model.ReviewsReceived.OrderByDescending(r => r.CreatedAt))
+                        {
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 bg-light shadow-sm hover-card">
+                                    <div class="card-body">
+                                        <div class="text-warning mb-2 small">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="@(i <= review.Rating ? "fas fa-star text-warning" : "far fa-star text-secondary")"></i>
+                                            }
+                                        </div>
+                                        <p class="card-text text-dark small">"@review.Comment"</p>
+                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                            <span class="fw-bold small">@review.Customer?.FullName</span>
+                                            <span class="text-muted x-small">@review.CreatedAt.ToShortDateString()</span>
                                         </div>
                                     </div>
                                 </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="col-12 text-center py-5 bg-light rounded shadow-sm border-dashed">
-                            <i class="bi bi-chat-square-dots fs-1 text-muted opacity-50"></i>
-                            <p class="text-muted mt-3 mb-0">No reviews available yet for this provider.</p>
-                        </div>
-                    }
+                            </div>
+                        }
+                    </div>
                 </div>
             }
         </div>
@@ -180,10 +174,6 @@
 </div>
 
 <style>
-    .border-dashed {
-        border: 2px dashed #dee2e6;
-    }
-
     .x-small {
         font-size: 0.75rem;
     }
@@ -194,10 +184,6 @@
 
     .text-secondary {
         color: #adb5bd !important;
-    }
-
-    .gap-3 {
-        gap: 1rem;
     }
 
     .italic-box {

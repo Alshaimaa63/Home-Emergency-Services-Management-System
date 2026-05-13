@@ -25,12 +25,12 @@ namespace HomeServices.Models
 
         // مقدم الخدمة الذي استلم التقييم (المستقبل)
         [Required]
-        public string ServiceProviderId { get; set; } = string.Empty; // تم توحيد الاسم هنا
+        public string ServiceProviderId { get; set; } = string.Empty;
 
         [ForeignKey("ServiceProviderId")]
         public virtual ApplicationUser? ServiceProvider { get; set; }
 
-        // الطلب المرتبط بالتقييم
+
         [Required]
         public int RequestId { get; set; }
 

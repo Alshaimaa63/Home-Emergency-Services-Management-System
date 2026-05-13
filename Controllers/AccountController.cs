@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HomeServices.Controllers
 {
@@ -47,7 +48,6 @@ namespace HomeServices.Controllers
                     return View(model);
                 }
 
-                // تنظيف النصوص من المسافات الزائدة
                 string cleanName = System.Text.RegularExpressions.Regex.Replace(model.FullName.Trim(), @"\s+", " ");
                 string cleanAddress = System.Text.RegularExpressions.Regex.Replace(model.Address.Trim(), @"\s+", " ");
 
@@ -59,14 +59,9 @@ namespace HomeServices.Controllers
                     Address = cleanAddress,
                     PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.Now,
-
-                    // --- التعديل الجوهري هنا ---
-                    // العميل يبدأ بـ 1000، والبروفايدر أو أي دور آخر يبدأ بـ 0
+                    // العميل يبدأ بـ 1000 رصيد تجريبي
                     WalletBalance = model.Role == "Customer" ? 1000.00m : 0.00m,
-
-                    // البروفايدر يبدأ غير موثق والعميل موثق تلقائياً (أو حسب رغبتك)
                     IsVerified = model.Role == "Customer",
-
                     Bio = model.Role == "ServiceProvider" ? "Professional service provider ready to help!" : null,
                     Specialty = model.Role == "ServiceProvider" ? "General Maintenance" : null,
                     ProfilePicture = "default-user.png"
@@ -82,7 +77,6 @@ namespace HomeServices.Controllers
                     await _userManager.AddToRoleAsync(user, model.Role);
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    // توجيه ذكي بعد التسجيل مباشرة
                     if (model.Role == "Admin") return RedirectToAction("Dashboard", "Admin");
                     return RedirectToAction("Index", "Home");
                 }
@@ -92,7 +86,7 @@ namespace HomeServices.Controllers
         }
 
         // ==========================================
-        // 2. تسجيل الدخول (Login) مع التوجيه للأدمن
+        // 2. تسجيل الدخول (Login)
         // ==========================================
         [HttpGet]
         public IActionResult Login() => View();
@@ -107,13 +101,10 @@ namespace HomeServices.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
-
-                    // إذا كان أدمن، يفتح الداش بورد فوراً
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
                         return RedirectToAction("Dashboard", "Admin");
                     }
-
                     return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -129,21 +120,33 @@ namespace HomeServices.Controllers
         }
 
         // ==========================================
-        // 3. عرض وتعديل الملف الشخصي (Profile)
+        // 3. عرض الملف الشخصي (Profile) - النسخة النهائية المصلحة
         // ==========================================
         [Authorize]
         public async Task<IActionResult> Profile(string id)
         {
-            // منع الأدمن من دخول صفحة البروفايل العادية
-            if (User.IsInRole("Admin") && string.IsNullOrEmpty(id))
-                return RedirectToAction("Dashboard", "Admin");
+            // 1. تحديد ID المستخدم المطلوب عرضه
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var targetUserId = string.IsNullOrEmpty(id) ? currentUserId : id;
 
-            var userId = string.IsNullOrEmpty(id) ? _userManager.GetUserId(User) : id;
+            if (targetUserId == null) return RedirectToAction("Login");
+
+            // 2. جلب أحدث بيانات من الداتابيز مباشرة (إجبار التحديث)
             var user = await _context.Users
                 .Include(u => u.ReviewsReceived).ThenInclude(r => r.Customer)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == targetUserId);
 
             if (user == null) return NotFound();
+
+            // 3. 🔥 التحديث اللحظي للمحفظة في الهيدر 🔥
+            // إذا كان المستخدم يفتح بروفايله الشخصي، نقوم بتحديث الـ SignIn لإظهار الرقم الجديد فوق
+            if (string.IsNullOrEmpty(id) || id == currentUserId)
+            {
+                // نحتاج لجلب الكائن بدون AsNoTracking هنا فقط من أجل عملية الـ Refresh
+                var userForRefresh = await _userManager.FindByIdAsync(currentUserId);
+                await _signInManager.RefreshSignInAsync(userForRefresh);
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             ViewBag.UserRole = roles.FirstOrDefault();
@@ -151,6 +154,9 @@ namespace HomeServices.Controllers
             return View(user);
         }
 
+        // ==========================================
+        // 4. تعديل الملف الشخصي (EditProfile)
+        // ==========================================
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> EditProfile()
@@ -199,6 +205,8 @@ namespace HomeServices.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
+                // تحديث الجلسة بعد تعديل البيانات (مثل الاسم أو الصورة) لتظهر في الهيدر
+                await _signInManager.RefreshSignInAsync(user);
                 TempData["Success"] = "Your profile has been updated successfully!";
                 return RedirectToAction("Profile");
             }
