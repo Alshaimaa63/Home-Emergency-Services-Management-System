@@ -4,6 +4,7 @@ using HomeServices.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514091911_IncreaseBioLength")]
+    partial class IncreaseBioLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,8 +38,8 @@ namespace HomeServices.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -119,8 +122,8 @@ namespace HomeServices.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "d26ba1aa-b5cf-4bcc-a596-ca2be8230d07",
-                            CreatedAt = new DateTime(2026, 5, 14, 13, 45, 7, 327, DateTimeKind.Local).AddTicks(4446),
+                            ConcurrencyStamp = "7284fa88-88f5-47a1-bec9-a11c81265017",
+                            CreatedAt = new DateTime(2026, 5, 14, 12, 19, 5, 930, DateTimeKind.Local).AddTicks(2882),
                             Email = "admin@home.com",
                             EmailConfirmed = true,
                             FullName = "System Admin",
@@ -128,10 +131,10 @@ namespace HomeServices.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@HOME.COM",
                             NormalizedUserName = "ADMIN@HOME.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEARFIMpZHE/pg5Vd53eDd2iBrsj0gI7a4L55CbEDLmj0Snv4fuJJj665AcEh5hyvUw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDbNPtmDbm2fTolxz0hwUjAHoVgG8HnIEMAAnZjmmsgNRbkN2RVjANhtEf5GowXbvQ==",
                             PhoneNumberConfirmed = false,
                             ProfilePicture = "default-user.png",
-                            SecurityStamp = "f10a81d2-9f46-42a8-a1a5-88c354463b4c",
+                            SecurityStamp = "1ec87923-0ae1-4475-9294-b5196b214d9e",
                             TwoFactorEnabled = false,
                             UserName = "admin@home.com",
                             WalletBalance = 0.00m

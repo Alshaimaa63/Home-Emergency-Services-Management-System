@@ -52,17 +52,6 @@ namespace HomeServices.Controllers
             return View(notifications);
         }
 
-        // ميثود إضافية اختيارية: مسح إشعار معين
-        [HttpPost]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var notification = await _context.Notifications.FindAsync(id);
-            if (notification != null)
-            {
-                _context.Notifications.Remove(notification);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
+        
     }
 }

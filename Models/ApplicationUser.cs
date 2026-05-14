@@ -26,6 +26,10 @@ namespace HomeServices.Models
 
         [Display(Name = "About Me")]
         [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters")]
+
+
+        //  Bio
+        [MaxLength(1000)]
         public string? Bio { get; set; }
         public bool IsVerified { get; set; } = false; // افتراضياً غير مقبول حتى يوافق الأدمن
 

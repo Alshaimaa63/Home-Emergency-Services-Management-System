@@ -5,16 +5,10 @@
 <ul class="navbar-nav align-items-center">
     @if (SignInManager.IsSignedIn(User))
     {
-        @* إخفاء أيقونة البروفايل والمحفظة إذا كان المستخدم أدمن *@
+        @* تم حذف دايرة البروفيل فقط من هنا وسيبنا الـ check بتاع الأدمن شغال *@
         @if (!User.IsInRole("Admin"))
         {
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Account" asp-action="Profile" title="My Profile">
-                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm" style="width:35px; height:35px;">
-                        <i class="fas fa-user text-primary"></i>
-                    </div>
-                </a>
-            </li>
+            @* الجزء ده كان فيه دايرة البروفيل وشلناها عشان متبقاش مكررة مع اللي في الـ Layout *@
         }
 
         <li class="nav-item ms-2">

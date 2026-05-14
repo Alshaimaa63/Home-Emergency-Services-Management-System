@@ -46,14 +46,14 @@
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
                     <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
                     <h6 class="text-muted fw-bold small uppercase">Total Earnings</h6>
-                    <h2 class="fw-bold text-dark">@(ViewBag.TotalEarnings ?? "0.00")</h2>
+                    <h2 class="fw-bold text-dark">@(ViewBag.TotalEarnings ?? "0.00") EGP</h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
                     <i class="fas fa-check-double fa-2x text-success mb-3"></i>
                     <h6 class="text-muted fw-bold small uppercase">Jobs Completed</h6>
-                    <h2 class="fw-bold text-dark">@(Model != null ? Model.Count(r => r.Status == "Completed") : 0)</h2>
+                    <h2 class="fw-bold text-dark">@(Model != null ? Model.Count(r => r.Status == "Completed" || r.Status == "Finished") : 0)</h2>
                 </div>
             </div>
             <div class="col-md-4">
@@ -87,10 +87,11 @@
                             {
                                 foreach (var request in Model.Take(10))
                                 {
-                                    <tr>
+                                    @* 🔥 التعديل هنا: جعل السطر بالكامل قابل للضغط 🔥 *@
+                                    <tr class="clickable-task-row" data-url="@Url.Action("Details", "Requests", new { id = request.Id })" style="cursor: pointer;">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-size: 12px;">
+                                                <div class="rounded-circle bg-soft-primary text-primary d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-weight: bold;">
                                                     @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
                                                 </div>
                                                 <div>
@@ -100,24 +101,25 @@
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge rounded-pill @(request.Status == "Completed" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3 py-2">
+                                            <span class="badge rounded-pill @(request.Status == "Completed" || request.Status == "Finished" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3 py-2">
                                                 @request.Status
                                             </span>
                                         </td>
                                         <td class="text-muted">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
-                                        <td class="text-center">
+
+                                        @* 🔒 نمنع تفعيل ضغطة السطر عند الضغط على الأزرار 🔒 *@
+                                        <td class="text-center" onclick="event.stopPropagation();">
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                                     Details
                                                 </a>
 
-                                                @* 🔥 التعديل هنا: زرار إنهاء المهمة 🔥 *@
                                                 @if (request.Status == "Accepted")
                                                 {
                                                     <form asp-controller="Requests" asp-action="CompleteRequest" method="post" style="display:inline;">
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="id" value="@request.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" onclick="return confirm('Mark this job as finished?')">
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" onclick="return confirm('Mark this job as finished and collect your earnings (90%)?')">
                                                             <i class="fas fa-check me-1"></i> Finish
                                                         </button>
                                                     </form>
@@ -145,7 +147,6 @@
 </div>
 
 <style>
-    /* ستايلاتك الأصلية */
     .table thead th {
         font-size: 0.85rem;
         text-transform: uppercase;
@@ -162,6 +163,10 @@
         color: #ef6c00;
     }
 
+    .bg-soft-primary {
+        background-color: #e8eaf6;
+    }
+
     .card {
         transition: transform 0.3s ease;
     }
@@ -169,4 +174,21 @@
         .card:hover {
             transform: translateY(-5px);
         }
+
+    /* تأثير تمرير الماوس على السطر */
+    .clickable-task-row:hover {
+        background-color: rgba(26, 35, 126, 0.04) !important;
+        transition: all 0.2s ease-in-out;
+    }
 </style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // كود الجافا سكريبت للانتقال السريع
+            $(".clickable-task-row").click(function () {
+                window.location = $(this).data("url");
+            });
+        });
+    </script>
+}

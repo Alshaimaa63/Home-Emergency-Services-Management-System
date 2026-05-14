@@ -63,7 +63,8 @@
                         <tbody>
                             @foreach (var item in Model)
                             {
-                                <tr>
+                                @* إضافة الكلاس و الـ Data URL لجعل السطر قابل للضغط *@
+                                <tr class="clickable-row" data-url="@Url.Action("Details", "Requests", new { id = item.Id })" style="cursor: pointer;">
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-circle me-3">
@@ -87,7 +88,9 @@
                                     </td>
 
                                     <td>
-                                        @{ var statusClass = item.Status == "Completed" ? "status-completed" : "status-pending"; }
+                                        @{
+                                            var statusClass = item.Status == "Completed" ? "status-completed" : "status-pending";
+                                        }
                                         <div class="badge-ui @statusClass">
                                             <span class="status-dot"></span>
                                             @item.Status
@@ -98,7 +101,8 @@
                                         @(item.FinalPrice.HasValue ? $"${item.FinalPrice.Value:N2}" : "--")
                                     </td>
 
-                                    <td>
+                                    @* نستخدم stopPropagation لمنع تداخل الضغطات *@
+                                    <td class="text-end" onclick="event.stopPropagation();">
                                         <div class="dropdown">
                                             <button class="btn-action-circle no-border" type="button" data-bs-toggle="dropdown">
                                                 <i class="fas fa-ellipsis-v"></i>
@@ -109,9 +113,7 @@
                                                         <i class="far fa-eye me-2 text-primary"></i> View Details
                                                     </a>
                                                 </li>
-
-                                                @* Only show Edit if the service is still in a draft/new state *@
-                                                @if (item.Status != "Completed" && item.Status == "Pending") 
+                                                @if (item.Status != "Completed" && item.Status == "Pending")
                                                 {
                                                     <li>
                                                         <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">
@@ -131,3 +133,41 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* تحسين شكل السطر عند تمرير الماوس */
+    .clickable-row:hover {
+        background-color: rgba(26, 35, 126, 0.05) !important;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #e8eaf6;
+        color: #1a237e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    /* الـ Border حق زرار التلت نقط */
+    .no-border {
+        border: none !important;
+        background: transparent;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // كود الجافا سكريبت لتنفيذ الانتقال عند الضغط
+            $(".clickable-row").click(function () {
+                window.location = $(this).data("url");
+            });
+        });
+    </script>
+}

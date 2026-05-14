@@ -120,18 +120,16 @@ namespace HomeServices.Controllers
         }
 
         // ==========================================
-        // 3. عرض الملف الشخصي (Profile) - النسخة النهائية المصلحة
+        // 3. عرض الملف الشخصي (Profile)
         // ==========================================
         [Authorize]
         public async Task<IActionResult> Profile(string id)
         {
-            // 1. تحديد ID المستخدم المطلوب عرضه
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var targetUserId = string.IsNullOrEmpty(id) ? currentUserId : id;
 
             if (targetUserId == null) return RedirectToAction("Login");
 
-            // 2. جلب أحدث بيانات من الداتابيز مباشرة (إجبار التحديث)
             var user = await _context.Users
                 .Include(u => u.ReviewsReceived).ThenInclude(r => r.Customer)
                 .AsNoTracking()
@@ -139,11 +137,8 @@ namespace HomeServices.Controllers
 
             if (user == null) return NotFound();
 
-            // 3. 🔥 التحديث اللحظي للمحفظة في الهيدر 🔥
-            // إذا كان المستخدم يفتح بروفايله الشخصي، نقوم بتحديث الـ SignIn لإظهار الرقم الجديد فوق
             if (string.IsNullOrEmpty(id) || id == currentUserId)
             {
-                // نحتاج لجلب الكائن بدون AsNoTracking هنا فقط من أجل عملية الـ Refresh
                 var userForRefresh = await _userManager.FindByIdAsync(currentUserId);
                 await _signInManager.RefreshSignInAsync(userForRefresh);
             }
@@ -185,7 +180,16 @@ namespace HomeServices.Controllers
 
             if (User.IsInRole("ServiceProvider"))
             {
-                user.Bio = bio;
+                // 🔥 حماية الداتابيز: لو السيرة الذاتية أطول من 1000 حرف، هنقص الزيادة 🔥
+                if (!string.IsNullOrEmpty(bio) && bio.Length > 1000)
+                {
+                    user.Bio = bio.Substring(0, 1000);
+                }
+                else
+                {
+                    user.Bio = bio;
+                }
+
                 user.Specialty = specialty;
             }
 
@@ -205,7 +209,6 @@ namespace HomeServices.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
-                // تحديث الجلسة بعد تعديل البيانات (مثل الاسم أو الصورة) لتظهر في الهيدر
                 await _signInManager.RefreshSignInAsync(user);
                 TempData["Success"] = "Your profile has been updated successfully!";
                 return RedirectToAction("Profile");

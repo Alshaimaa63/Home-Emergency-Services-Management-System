@@ -3,9 +3,7 @@
     ViewData["Title"] = "Home Page";
 }
 
-@* Core Stylesheet for Home Page 
-    Maintains separation of concerns by keeping layout logic here and design in CSS.
-*@
+@* الملف الخاص بالتنسيقات *@
 <link rel="stylesheet" href="~/css/home.css" />
 
 <section class="hero-section animate__animated animate__fadeIn">
@@ -14,8 +12,7 @@
         <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">
             Connect with the finest local artisans and service professionals who treat your home with the mastery it deserves.
         </p>
-        
-        @* ROLE-BASED ACTION: Displays search for customers and job navigation for providers *@
+
         @if (!User.IsInRole("ServiceProvider") && !User.IsInRole("Admin"))
         {
             <form asp-controller="Home" asp-action="Index" method="get">
@@ -36,7 +33,6 @@
     </div>
 </section>
 
-@* SERVICES GRID: Dynamically mapped images based on category names *@
 @if (!User.IsInRole("ServiceProvider") && !User.IsInRole("Admin"))
 {
     <div class="container my-5">
@@ -54,21 +50,22 @@
         }
 
         <div class="row g-4">
+            @* 1. عرض الخدمات الديناميكية (مع استثناء النجارة لو موجودة عشان م تتكررش) *@
             @foreach (var item in Model)
             {
-                @* Image selection logic for a personalized visual experience *@
+                // لو الخدمة هي النجارة، م تعرضهاش هنا لأننا ضايفينها يدوي تحت بالـ ID بتاعها
+                if (item.Name.Contains("Carpentry")) continue;
+
                 string imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
 
-                if (item.Name.Contains("Plumbing")) 
+                if (item.Name.Contains("Plumbing"))
                     imageUrl = "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
-                else if (item.Name.Contains("Electricity")) 
+                else if (item.Name.Contains("Electricity"))
                     imageUrl = "https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=800&auto=format&fit=crop";
-                else if (item.Name.Contains("Cleaning")) 
+                else if (item.Name.Contains("Cleaning"))
                     imageUrl = "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=800&auto=format&fit=crop";
-                else if (item.Name.Contains("Painting")) 
+                else if (item.Name.Contains("Painting"))
                     imageUrl = "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=800&auto=format&fit=crop";
-                else if (item.Name.Contains("Carpentry")) 
-                    imageUrl = "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=800&auto=format&fit=crop";
 
                 <div class="col-md-4 scroll-reveal">
                     <div class="service-card shadow-sm" onclick="location.href='@Url.Action("Create", "Requests", new { categoryId = item.Id })'">
@@ -81,6 +78,18 @@
                     </div>
                 </div>
             }
+
+            @* 2. كارت النجارة الثابت (المرتبط بـ ID رقم 2) *@
+            <div class="col-md-4 scroll-reveal">
+                <div class="service-card shadow-sm" onclick="location.href='@Url.Action("Create", "Requests", new { categoryId = 2 })'">
+                    <img src="https://images.unsplash.com/photo-1581447100595-3a813597383a?q=80&w=800&auto=format&fit=crop" alt="Carpentry" class="service-img">
+                    <div class="service-card-overlay">
+                        <small class="text-uppercase fw-bold text-info">Service</small>
+                        <h4 class="fw-bold text-white">Carpentry</h4>
+                        <p class="small mb-0 text-white-50">Professional woodwork, furniture repair, and custom installations.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -124,19 +133,14 @@
     <script>
         const observerOptions = {
             root: null,
-            threshold: 0.1 // Triggers quickly when the top of the element hits the view
+            threshold: 0.1
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    // Apply your 0.5s delay
                     entry.target.style.animationDelay = '0.5s';
-                    
-                    // Add the animation class
                     entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                    
-                    // Stop watching this element once it has appeared
                     observer.unobserve(entry.target);
                 }
             });
@@ -147,3 +151,24 @@
         });
     </script>
 }
+
+<style>
+    .service-card {
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        height: 300px; /* توحيد الطول للكروت */
+    }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+
+    .service-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>

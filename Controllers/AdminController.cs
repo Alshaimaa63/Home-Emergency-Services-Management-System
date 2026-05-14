@@ -13,24 +13,26 @@ namespace HomeServices.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        // قمنا بحقن UserManager للتعامل مع اليوزرز والأدوار
         public AdminController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // --- 1. لوحة التحكم المحدثة (Dashboard with Stats & Tabs) ---
+        // --- 1. لوحة التحكم المحدثة (إظهار إحصائيات الأرباح والمستخدمين) ---
 
         [Authorize(Policy = "AdminOnly")]
-       
         public async Task<IActionResult> Dashboard()
         {
-            // جلب البيانات
-            var requests = await _context.Requests.Include(r => r.Category).Include(r => r.Customer).ToListAsync();
+            // جلب البيانات الأساسية
+            var requests = await _context.Requests
+                .Include(r => r.Category)
+                .Include(r => r.Customer)
+                .ToListAsync();
+
             var complaints = await _context.Complaints.ToListAsync();
 
-            // جلب اليوزرز
+            // جلب اليوزرز وفلترتهم حسب الأدوار
             var allUsers = await _context.Users.ToListAsync();
             var providers = new List<ApplicationUser>();
             var customers = new List<ApplicationUser>();
@@ -43,6 +45,18 @@ namespace HomeServices.Controllers
                     customers.Add(user);
             }
 
+            // 🔥 حساب أرباح الموقع (الـ 10%) ديناميكياً من الطلبات المنتهية 🔥
+            var totalCompletedRequestsValue = requests
+                .Where(r => r.Status == "Completed" || r.Status == "Finished")
+                .Sum(r => (decimal?)r.FinalPrice ?? 0m);
+
+            ViewBag.TotalAdminProfit = totalCompletedRequestsValue * 0.10m; // إجمالي العمولات المستحقة للموقع
+
+            // جلب محفظة الأدمن الفعلية (التي تتحدث عند كل عملية Finish)
+            // تأكدي أن الإيميل هنا مطابق لإيميل الأدمن المسجل في قاعدة البيانات
+            var admin = await _userManager.FindByEmailAsync("admin@servicepro.com");
+            ViewBag.AdminWallet = admin?.WalletBalance ?? 0;
+
             // إرسال البيانات للـ View
             ViewBag.Complaints = complaints;
             ViewBag.Providers = providers;
@@ -54,14 +68,10 @@ namespace HomeServices.Controllers
             ViewBag.OpenComplaints = complaints.Count(c => c.Status != "Solved");
             ViewBag.TotalOrders = requests.Count;
 
-            // جلب محفظة الأدمن (تأكدي من صحة الإيميل)
-            var admin = await _userManager.FindByEmailAsync("admin@home.com");
-            ViewBag.AdminWallet = admin?.WalletBalance ?? 0;
-
             return View(requests);
         }
 
-        // --- 2. إدارة المستخدمين (Verify & Delete) ---
+        // --- 2. إدارة المستخدمين (توثيق وحذف) ---
 
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> VerifyProvider(string id)
@@ -72,19 +82,18 @@ namespace HomeServices.Controllers
                 user.IsVerified = true;
                 await _userManager.UpdateAsync(user);
 
-                // --- إضافة الإشعار هنا ---
+                // إشعار الفني بالتوثيق
                 var notification = new Notification
                 {
                     UserId = user.Id,
                     Message = "Congratulations! Your account has been verified by the Admin. You can now start browsing requests and submitting offers.",
                     CreatedAt = DateTime.Now,
                     IsRead = false,
-                    TargetUrl = Url.Action("AvailableRequests", "Provider") // هينقله لصفحة الطلبات المتاحة أول ما يدوس عليه
+                    TargetUrl = Url.Action("AvailableRequests", "Provider")
                 };
 
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
-                // -----------------------
 
                 TempData["Success"] = "Provider has been verified and notified successfully!";
             }
@@ -97,7 +106,6 @@ namespace HomeServices.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user != null)
             {
-                // إذا أردت حذف اليوزر نهائياً
                 await _userManager.DeleteAsync(user);
                 TempData["Success"] = "User account has been permanently deleted.";
             }
@@ -130,7 +138,7 @@ namespace HomeServices.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        // --- 4. نظام التقييم (كما هو) ---
+        // --- 4. نظام التقييم ---
 
         [HttpGet]
         public async Task<IActionResult> RateService(int requestId)
@@ -175,7 +183,7 @@ namespace HomeServices.Controllers
             return View(review);
         }
 
-        // --- 5. نظام الشكاوى (كما هو) ---
+        // --- 5. نظام الشكاوى ---
 
         [HttpGet]
         public IActionResult SendComplaint()

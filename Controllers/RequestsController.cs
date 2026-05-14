@@ -23,6 +23,9 @@ namespace HomeServices.Controllers
             _userManager = userManager;
         }
 
+        // ==========================================
+        // 1. عرض طلبات العميل
+        // ==========================================
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
@@ -41,6 +44,9 @@ namespace HomeServices.Controllers
             return View(myRequests);
         }
 
+        // ==========================================
+        // 2. إنشاء طلب جديد
+        // ==========================================
         [Authorize(Roles = "Customer")]
         public IActionResult Create()
         {
@@ -70,12 +76,7 @@ namespace HomeServices.Controllers
                     _context.Add(request);
                     await _context.SaveChangesAsync();
 
-                    // --- التعديل هنا لفلترة مقدمي الخدمة الموثقين فقط ---
-
-                    // 1. جلب كل اليوزرز اللي ليهم دور مقدم خدمة
                     var allProviders = await _userManager.GetUsersInRoleAsync("ServiceProvider");
-
-                    // 2. فلترة القائمة برمجياً لاختيار الموثقين فقط (IsVerified == true)
                     var verifiedProviders = allProviders.Where(p => p.IsVerified).ToList();
 
                     foreach (var p in verifiedProviders)
@@ -91,8 +92,6 @@ namespace HomeServices.Controllers
                     }
 
                     await _context.SaveChangesAsync();
-                    // ------------------------------------------------
-
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -101,6 +100,9 @@ namespace HomeServices.Controllers
             return View(request);
         }
 
+        // ==========================================
+        // 3. تفاصيل الطلب والعروض
+        // ==========================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -119,6 +121,9 @@ namespace HomeServices.Controllers
             return View(request);
         }
 
+        // ==========================================
+        // 4. قبول عرض السعر (خصم من العميل)
+        // ==========================================
         [HttpPost]
         [Authorize(Roles = "Customer")]
         [ValidateAntiForgeryToken]
@@ -159,19 +164,74 @@ namespace HomeServices.Controllers
                 IsRead = false
             });
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["Success"] = $"Offer accepted! {offer.Amount:C} deducted from wallet.";
-            }
-            catch (Exception)
-            {
-                TempData["Error"] = "Transaction failed.";
-            }
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Offer accepted! {offer.Amount:0.00} EGP deducted from wallet.";
 
             return RedirectToAction(nameof(Index));
         }
 
+        // ==========================================
+        // 5. إنهاء العمل (تقسيم المبلغ 90% للفني و 10% للموقع)
+        // ==========================================
+        [HttpPost]
+        [Authorize(Roles = "ServiceProvider")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteRequest(int id)
+        {
+            var request = await _context.Requests
+                .Include(r => r.Provider)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (request == null) return NotFound();
+
+            request.Status = "Completed";
+
+            // 🔥 الربط المالي الجديد مع نسبة 10% للموقع 🔥
+            if (request.Provider != null && request.FinalPrice > 0)
+            {
+                var providerUser = request.Provider as ApplicationUser;
+
+                if (providerUser != null)
+                {
+                    // 1. الحسبة المالية
+                    decimal totalAmount = (decimal)request.FinalPrice;
+                    decimal siteCommission = totalAmount * 0.10m; // عمولة 10%
+                    decimal providerProfit = totalAmount - siteCommission; // الصافي 90%
+
+                    // 2. إضافة الـ 90% لمحفظة الفني
+                    providerUser.WalletBalance += providerProfit;
+                    _context.Users.Update(providerUser);
+
+                    // 3. إضافة الـ 10% لمحفظة الأدمن (Profit)
+                    // ملحوظة: تأكدي أن إيميل الأدمن مطابق لما في الداتابيز
+                    var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "admin@servicepro.com");
+                    if (adminUser != null)
+                    {
+                        adminUser.WalletBalance += siteCommission;
+                        _context.Users.Update(adminUser);
+                    }
+                }
+            }
+
+            // إرسال إشعار للعميل للتقييم
+            _context.Notifications.Add(new Notification
+            {
+                UserId = request.CustomerId,
+                Message = "✅ Service completed! Tap here to rate the provider.",
+                TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }),
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            });
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Job Finished! Funds processed (90% to you, 10% platform fee).";
+
+            return RedirectToAction("Dashboard", "Provider");
+        }
+
+        // ==========================================
+        // 6. عمليات إضافية (تعديل وإلغاء)
+        // ==========================================
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -198,17 +258,13 @@ namespace HomeServices.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    var existingRequest = await _context.Requests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
-                    request.CustomerId = existingRequest.CustomerId;
-                    request.Status = existingRequest.Status;
-                    request.CreatedAt = existingRequest.CreatedAt;
+                var existingRequest = await _context.Requests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+                request.CustomerId = existingRequest.CustomerId;
+                request.Status = existingRequest.Status;
+                request.CreatedAt = existingRequest.CreatedAt;
 
-                    _context.Update(request);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException) { }
+                _context.Update(request);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(request);
@@ -226,50 +282,5 @@ namespace HomeServices.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-
-
-        [HttpPost]
-        [Authorize(Roles = "ServiceProvider")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CompleteRequest(int id)
-        {
-            // 1. جلب الطلب فقط (بدون تعقيدات اليوزر)
-            var request = await _context.Requests.FindAsync(id);
-
-            if (request == null) return NotFound();
-
-            // 2. تحديث حالة الطلب (عشان تظهر الفورم عند العميل)
-            request.Status = "Completed";
-
-            // 3. 🔥 إرسال الإشعار للعميل (ده اللي يهمنا) 🔥
-            var notification = new Notification
-            {
-                UserId = request.CustomerId, // العميل هو اللي هيستلم
-                Message = "✅ Service completed! Tap here to rate the provider.",
-                TargetUrl = Url.Action("Details", "Requests", new { id = request.Id }), // هيوديه للصفحة اللي فيها النجوم
-                CreatedAt = DateTime.Now,
-                IsRead = false
-            };
-
-            _context.Notifications.Add(notification);
-
-            // 4. حفظ التغييرات
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Order marked as completed!";
-
-            // يرجعه لصفحة الشغل بتاعته
-            return RedirectToAction("Dashboard", "Provider");
-        }
-
-
-
-
-
-
-
-
-
     }
-
 }

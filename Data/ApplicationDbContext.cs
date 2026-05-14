@@ -24,6 +24,7 @@ namespace HomeServices.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+
             base.OnModelCreating(builder);
 
             // --- إعداد العلاقات (Relationships) ---
@@ -113,6 +114,10 @@ namespace HomeServices.Data
                 RoleId = adminRoleId,
                 UserId = adminUserId
             });
+
+            builder.Entity<ApplicationUser>()
+            .Property(u => u.Bio)
+            .HasMaxLength(1000);
         }
     }
 }

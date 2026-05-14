@@ -95,12 +95,19 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">Professional Biography (Bio)</label>
-                            <textarea name="bio" class="form-control border-2 shadow-sm" rows="5"
-                                  placeholder="Tell customers about your experience, tools, and what makes you the best choice...">@Model.Bio</textarea>
-                            <div class="form-text mt-2 small text-muted">
+                            <div class="position-relative">
+                                <textarea asp-for="Bio" id="bioInput" class="form-control shadow-sm" rows="5" maxlength="1000" placeholder="Write something about yourself..."></textarea>
+
+                                <div class="text-end mt-1">
+                                    <small class="text-muted fw-bold">
+                                        <span id="charCount">0</span> / 1000
+                                    </small>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-2">
                                 <i class="fas fa-lightbulb text-warning me-1"></i>
                                 Professional bio increases your chances of being hired by 40%.
-                            </div>
+                            </small>
                         </div>
                     </div>
                 }
@@ -124,6 +131,29 @@
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // تشغيل العداد الخاص بالسيرة الذاتية
+        const bioInput = document.getElementById("bioInput");
+        const charCount = document.getElementById("charCount");
+
+        if(bioInput && charCount) {
+            if(bioInput.value) {
+                charCount.textContent = bioInput.value.length;
+            }
+
+            bioInput.addEventListener("input", function () {
+                charCount.textContent = this.value.length;
+
+                if (this.value.length >= 950) {
+                    charCount.classList.add("text-danger");
+                } else {
+                    charCount.classList.remove("text-danger");
+                }
+            });
+        }
+    });
+
+    // تشغيل معاينة الصورة
     function previewImage(event) {
         var reader = new FileReader();
         reader.onload = function () {
