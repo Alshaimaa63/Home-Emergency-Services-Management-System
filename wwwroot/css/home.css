@@ -1,0 +1,171 @@
+﻿/* --- Global Brand Colors --- */
+:root {
+    --brand-navy: #1a237e;
+    --brand-cyan: #00bcd4;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    position: relative;
+    padding: 160px 0;
+    text-align: center;
+    background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.23)), url(../img/hero_img.png);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.hero-title {
+    color: var(--brand-navy);
+    font-weight: 800;
+    font-size: 4.5rem;
+    letter-spacing: -1.5px;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.5);
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    color: #333;
+    font-size: 1.2rem;
+    max-width: 750px;
+    margin: 0 auto 40px auto;
+    font-weight: 300;
+    line-height: 1.8;
+    opacity: 0.9;
+}
+
+/* --- Search & Buttons --- */
+.search-bar-container {
+    max-width: 650px;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 50px;
+    display: flex;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+    .search-bar-container input {
+        border: none;
+        padding: 12px 30px;
+        width: 100%;
+        outline: none;
+        font-size: 1.1rem;
+        border-radius: 50px 0 0 50px;
+    }
+
+.btn-find {
+    background-color: var(--brand-navy);
+    color: white;
+    border: none;
+    padding: 0 40px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+    .btn-find:hover {
+        background-color: var(--brand-cyan);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* Specific button style for Providers */
+.btn-provider-mission {
+    background-color: #0dcaf0; /* btn-info equivalent */
+    color: white;
+    padding: 15px 48px;
+    font-weight: bold;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* --- Service Cards --- */
+.service-card {
+    border-radius: 20px;
+    overflow: hidden;
+    height: 380px;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    cursor: pointer;
+}
+
+.service-img {
+    width: 100%;
+    height: 250px; /* Kept from original inline style */
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.service-card:hover .service-img {
+    transform: scale(1.1);
+}
+
+.service-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26, 35, 126, 0.9) 0%, transparent 70%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 30px;
+    color: white;
+    transition: 0.3s;
+}
+
+.service-card:hover .service-card-overlay {
+    background: linear-gradient(to top, rgba(0, 188, 212, 0.8) 0%, transparent 80%);
+}
+
+/* --- Features Section --- */
+.section-heading {
+    color: var(--brand-navy);
+}
+
+.feature-box {
+    padding: 40px;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+    .feature-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    background: var(--brand-navy);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto 1rem; /* Added centering and spacing */
+}
+
+/* Initial state: Hidden, Lowered, and Blurred */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    filter: blur(2px); /* Initial blur effect */
+    transition: all 0.6s ease-out; /* Smooth transition for the blur and move */
+    visibility: hidden;
+}
+
+/* Final state: Visible, Reset Position, and Clear */
+.scroll-reveal.animate__animated {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0); /* Clears the blur */
+    visibility: visible;
+}
+

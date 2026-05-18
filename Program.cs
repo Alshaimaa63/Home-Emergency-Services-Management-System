@@ -1,68 +1,101 @@
-using HomeServices.Data;
+﻿using HomeServices.Data;
+using HomeServices.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace HomeServices
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Database Connection Configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// 2. Identity Services Configuration
+// ????? ???? ??????? ApplicationUser ??? ???? ??????? ?????
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+    options.Password.RequiredLength = 8; 
+    options.Password.RequireDigit = true; 
+    options.Password.RequireLowercase = true; 
+    options.Password.RequireUppercase = true; 
+    options.Password.RequireNonAlphanumeric = true; 
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// 3. MVC & Razor Pages Services
+builder.Services.AddControllersWithViews();
+builder.Services.AddAuthorization(options =>
 {
-    public class Program
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
+builder.Services.AddRazorPages();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+
+// 4. Middleware Pipeline Order
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages();
+
+// 5. Automatic Database Creation & Seed Data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
     {
-        public static void Main(string[] args)
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // ?????? Migrate ??? EnsureCreated ???? ???? ??? Migrations ???? ??????? ???????
+        context.Database.Migrate();
+
+        // Seeding initial categories if the table is empty
+        if (!context.Categories.Any())
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
-            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-            builder.Services.AddControllersWithViews();
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            context.Categories.AddRange(
+                new Category { Name = "Electricity", Description = "Electrical maintenance, wiring, and repair services" },
+                new Category { Name = "Plumbing", Description = "Water leaks repair, pipe installation, and sanitary works" },
+                new Category { Name = "Cleaning", Description = "Full home cleaning, carpet washing, and sanitation" },
+                new Category { Name = "Painting", Description = "Professional interior/exterior painting and wall decoration" }
+            );
+            context.SaveChanges();
+        }
+        if (!context.Complaints.Any())
+        {
+            context.Complaints.Add(new HomeServices.Models.Complaint
             {
-                app.UseMigrationsEndPoint();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-            app.MapRazorPages();
-
-
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<HomeServices.Data.ApplicationDbContext>();
-                if (!context.Categories.Any())
-                {
-                    context.Categories.AddRange(
-                        new HomeServices.Models.Category { Name = "??????", Description = "????? ????? ????????" },
-                        new HomeServices.Models.Category { Name = "?????", Description = "????? ????????? ????????" },
-                        new HomeServices.Models.Category { Name = "?????", Description = "????? ????? ???????" }
-                    );
-                    context.SaveChanges();
-                }
-            }
-
-            app.Run();
+                Title = "تأخير في الخدمة",
+                Description = "الفني تأخر عن موعده لمدة ساعتين",
+                UserEmail = "test@user.com"
+            });
+            context.SaveChanges();
         }
     }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
 }
+
+app.Run();

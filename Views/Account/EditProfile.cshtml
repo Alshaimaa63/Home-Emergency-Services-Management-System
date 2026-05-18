@@ -1,0 +1,198 @@
+﻿@model HomeServices.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Account Settings";
+    bool isProvider = User.IsInRole("ServiceProvider");
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 700px; border-radius: 15px;">
+        <div class="card-header bg-primary text-white py-3" style="border-radius: 15px 15px 0 0;">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-cog me-2"></i>
+                @(isProvider ? "Professional Profile Settings" : "Personal Account Settings")
+            </h5>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            @* التعديل الجوهري: إضافة enctype لتمويل رفع الملفات *@
+            <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="text-center mb-5">
+                    <div class="position-relative d-inline-block">
+                        @* عرض الصورة الحقيقية من مجلد img أو الصورة الافتراضية من نفس المجلد *@
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                        {
+                            <img src="~/img/@Model.ProfilePicture" id="profilePreview"
+                                 class="rounded-circle shadow mb-3 border border-4 border-white"
+                                 style="width: 130px; height: 130px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            @* محاولة عرض default-user.png من مجلد img أولاً *@
+                            <img src="~/img/default-user.png" id="profilePreview"
+                                 class="rounded-circle shadow mb-3 border border-4 border-white"
+                                 style="width: 130px; height: 130px; object-fit: cover;"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=@Model.FullName&background=random&size=130'" />
+                        }
+
+                        @* زر صغير فوق الصورة لاختيار ملف جديد *@
+                        <label for="imageUpload" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle shadow" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="imageUpload" name="profilePic" class="d-none" accept="image/*" onchange="previewImage(event)" />
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">@Model.FullName</h4>
+                    <p class="small text-muted">Click the camera icon to update your photo</p>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-primary fw-bold text-uppercase small mb-3 border-bottom pb-2">
+                        <i class="fas fa-info-circle me-1"></i> General Information
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone small text-muted"></i></span>
+                                <input type="text" name="phoneNumber" class="form-control border-start-0"
+                                       value="@Model.PhoneNumber" placeholder="01xxxxxxxxx" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Current Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-map-marker-alt small text-muted"></i></span>
+                                <input type="text" name="address" class="form-control border-start-0"
+                                       value="@Model.Address" placeholder="City, District..." required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (isProvider)
+                {
+                    <div class="mb-4 animate__animated animate__fadeIn">
+                        <h6 class="text-primary fw-bold text-uppercase small mb-3 border-bottom pb-2 mt-4">
+                            <i class="fas fa-briefcase me-1"></i> Professional Details
+                        </h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Your Main Specialty</label>
+                            <select name="specialty" class="form-select border-2 shadow-sm" required>
+                                <option value="" disabled>-- Choose your specialty --</option>
+                                <option value="Electricity" selected='@(Model.Specialty == "Electricity" ? "selected" : null)'>Electricity</option>
+                                <option value="Plumbing" selected='@(Model.Specialty == "Plumbing" ? "selected" : null)'>Plumbing</option>
+                                <option value="Carpentry" selected='@(Model.Specialty == "Carpentry" ? "selected" : null)'>Carpentry</option>
+                                <option value="Painting" selected='@(Model.Specialty == "Painting" ? "selected" : null)'>Painting</option>
+                                <option value="Cleaning" selected='@(Model.Specialty == "Cleaning" ? "selected" : null)'>Cleaning</option>
+                                <option value="General Maintenance" selected='@(Model.Specialty == "General Maintenance" || Model.Specialty == null ? "selected" : null)'>General Maintenance</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Professional Biography (Bio)</label>
+                            <div class="position-relative">
+                                <textarea asp-for="Bio" id="bioInput" class="form-control shadow-sm" rows="5" maxlength="1000" placeholder="Write something about yourself..."></textarea>
+
+                                <div class="text-end mt-1">
+                                    <small class="text-muted fw-bold">
+                                        <span id="charCount">0</span> / 1000
+                                    </small>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-lightbulb text-warning me-1"></i>
+                                Professional bio increases your chances of being hired by 40%.
+                            </small>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" name="specialty" value="" />
+                    <input type="hidden" name="bio" value="" />
+                }
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="submit" class="btn btn-success fw-bold py-2 shadow rounded-pill btn-lg">
+                        <i class="fas fa-check-circle me-2"></i> Save All Changes
+                    </button>
+                    <a asp-action="Profile" class="btn btn-outline-secondary rounded-pill py-2">
+                        Cancel and Go Back
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // تشغيل العداد الخاص بالسيرة الذاتية
+        const bioInput = document.getElementById("bioInput");
+        const charCount = document.getElementById("charCount");
+
+        if(bioInput && charCount) {
+            if(bioInput.value) {
+                charCount.textContent = bioInput.value.length;
+            }
+
+            bioInput.addEventListener("input", function () {
+                charCount.textContent = this.value.length;
+
+                if (this.value.length >= 950) {
+                    charCount.classList.add("text-danger");
+                } else {
+                    charCount.classList.remove("text-danger");
+                }
+            });
+        }
+    });
+
+    // تشغيل معاينة الصورة
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('profilePreview');
+            output.src = reader.result;
+            output.style.objectFit = "cover";
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
+<style>
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+    label[for="imageUpload"]:hover {
+        background-color: #000 !important;
+        cursor: pointer;
+        transform: scale(1.1);
+        transition: 0.2s;
+    }
+</style>

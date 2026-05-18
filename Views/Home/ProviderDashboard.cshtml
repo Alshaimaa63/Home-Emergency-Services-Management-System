@@ -1,0 +1,115 @@
+﻿@model IEnumerable<HomeServices.Models.Request>
+@{
+    ViewData["Title"] = "Provider Dashboard";
+}
+
+<div class="bg-primary text-white py-5 mb-4" style="background: linear-gradient(45deg, #1a237e, #3949ab) !important;">
+    <div class="container text-center">
+        <h1 class="fw-bold animate__animated animate__fadeInDown">Welcome back, Master Artisan!</h1>
+        <p class="lead animate__animated animate__fadeIn animate__delay-1s">Manage your service requests and track your performance.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4" style="border-left: 5px solid #1a237e !important;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box p-3 rounded-circle me-3" style="background-color: #e8eaed;">
+                        <i class="fas fa-tasks text-primary fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Total Requests</h6>
+                        <h3 class="fw-bold mb-0">@ViewBag.TotalRequests</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4" style="border-left: 5px solid #ffc107 !important;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box p-3 rounded-circle me-3" style="background-color: #fff9e6;">
+                        <i class="fas fa-clock text-warning fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Pending</h6>
+                        <h3 class="fw-bold mb-0">@ViewBag.PendingRequests</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4" style="border-left: 5px solid #28a745 !important;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box p-3 rounded-circle me-3" style="background-color: #eaf6ec;">
+                        <i class="fas fa-star text-success fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Rating</h6>
+                        <h3 class="fw-bold mb-0">4.9</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-5 animate__animated animate__fadeInUp">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i> Recent Service Requests</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Date Created</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var request in Model)
+                            {
+                                <tr>
+                                    <td><span class="fw-bold text-dark">@request.Category?.Name</span></td>
+                                    <td>
+                                        <span class="badge rounded-pill @(request.Status == "Pending" ? "bg-warning text-dark" : "bg-success")">
+                                            @request.Status
+                                        </span>
+                                    </td>
+                                    <td>@request.CreatedAt.ToShortDateString()</td>
+                                    <td class="text-center">
+                                        @* الزرار المعدل ليكون View ويربط بصفحة التفاصيل *@
+                                        <a asp-controller="Requests"
+                                           asp-action="Details"
+                                           asp-route-id="@request.Id"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-4">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-5">
+                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                    No requests found in your queue yet.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* استدعاء مكتبة Font Awesome للأيقونات *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />

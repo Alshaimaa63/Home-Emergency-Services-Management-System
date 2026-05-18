@@ -1,0 +1,296 @@
+﻿@model IEnumerable<HomeServices.Models.Request>
+@using HomeServices.Models
+
+@{
+    ViewData["Title"] = "Admin Panel";
+
+    // التأكد من عمل Cast صحيح والتعامل مع الـ Null للبيانات المرسلة من الكنترولر
+    var complaints = ViewBag.Complaints as IEnumerable<Complaint> ?? new List<Complaint>();
+    var providers = ViewBag.Providers as IEnumerable<ApplicationUser> ?? new List<ApplicationUser>();
+    var customers = ViewBag.Customers as IEnumerable<ApplicationUser> ?? new List<ApplicationUser>();
+
+    // جلب الأرباح المحسوبة والمحفظة (استخدام decimal لضمان الدقة)
+    decimal totalProfit = ViewBag.TotalAdminProfit ?? 0m;
+    decimal adminWallet = ViewBag.AdminWallet ?? 0m;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold text-dark animate__animated animate__fadeInLeft">
+        <i class="bi bi-speedometer2 me-2" style="color: var(--primary-dark);"></i> System Administration
+    </h2>
+
+    <div class="row g-4 mb-5 animate__animated animate__fadeInDown">
+        @* كارت العملاء *@
+        <div class="col-md-2">
+            <div class="stats-card p-3 h-100 shadow-sm" style="border-bottom-color: var(--primary-dark);">
+                <h6 class="text-uppercase small fw-bold text-muted">Customers</h6>
+                <h2 class="fw-bold" style="color: var(--primary-dark);">@ViewBag.TotalCustomers</h2>
+                <i class="fas fa-users position-absolute" style="right:15px; bottom:15px; font-size: 1.8rem; color: var(--primary-dark); opacity: 0.1;"></i>
+            </div>
+        </div>
+
+        @* كارت الفنيين *@
+        <div class="col-md-2">
+            <div class="stats-card p-3 h-100 shadow-sm" style="border-bottom-color: var(--primary-light);">
+                <h6 class="text-uppercase small fw-bold text-muted">Pending Pros</h6>
+                <h2 class="fw-bold" style="color: var(--primary-light);">@ViewBag.PendingProviders</h2>
+                <i class="fas fa-user-clock position-absolute" style="right:15px; bottom:15px; font-size: 1.8rem; color: var(--primary-light); opacity: 0.1;"></i>
+            </div>
+        </div>
+
+        @* كارت الشكاوى *@
+        <div class="col-md-2">
+            <div class="stats-card p-3 h-100 shadow-sm" style="border-bottom-color: #ef5350;">
+                <h6 class="text-uppercase small fw-bold text-muted">Complaints</h6>
+                <h2 class="fw-bold" style="color: #ef5350;">@ViewBag.OpenComplaints</h2>
+                <i class="fas fa-exclamation-circle position-absolute" style="right:15px; bottom:15px; font-size: 1.8rem; color: #ef5350; opacity: 0.1;"></i>
+            </div>
+        </div>
+
+        @* كارت الطلبات *@
+        <div class="col-md-2">
+            <div class="stats-card p-3 h-100 shadow-sm" style="border-bottom-color: var(--primary-dark);">
+                <h6 class="text-uppercase small fw-bold text-muted">Total Orders</h6>
+                <h2 class="fw-bold" style="color: var(--primary-dark);">@ViewBag.TotalOrders</h2>
+                <i class="fas fa-shopping-bag position-absolute" style="right:15px; bottom:15px; font-size: 1.8rem; color: var(--primary-dark); opacity: 0.1;"></i>
+            </div>
+        </div>
+
+        @* كارت أرباح المنصة - اللون الداكن المميز *@
+        <div class="col-md-4">
+            <div class="stats-card card-profits p-3 h-100 shadow d-flex flex-column justify-content-center">
+                <h6 class="text-uppercase small fw-bold opacity-75"><i class="fas fa-chart-line me-2"></i>Platform Profits (10%)</h6>
+                <h2 class="fw-bold mb-0 pulse-text text-info">@totalProfit.ToString("0.00") EGP</h2>
+                <small class="opacity-50">Revenue tracking active</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-container animate__animated animate__fadeInUp">
+        <div class="card-header bg-transparent p-0 border-0 mb-4">
+            <ul class="nav nav-pills card-header-pills" id="adminTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-orders">Orders</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-complaints">Complaints</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-providers">Providers Control</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-customers">Customers List</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-earnings"><i class="bi bi-cash-stack me-1"></i> Earnings</button></li>
+            </ul>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tab-orders">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light"><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-muted">#@item.Id</td>
+                                <td>@item.Customer?.FullName</td>
+                                <td>@item.Category?.Name</td>
+                                <td><span class="badge @(item.Status == "Cancelled by Admin" ? "bg-danger" : "bg-info")">@item.Status</span></td>
+                                <td>
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <a asp-action="CancelRequest" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="tab-complaints">
+                <table class="table align-middle">
+                    <thead class="table-light"><tr><th>Date</th><th>Email</th><th>Title</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in complaints)
+                        {
+                            <tr>
+                                <td class="text-muted small">@c.CreatedAt.ToShortDateString()</td>
+                                <td>@c.UserEmail</td>
+                                <td class="fw-medium">@c.Title</td>
+                                <td><span class="badge @(c.Status == "Solved" ? "bg-success" : "bg-warning text-dark")">@c.Status</span></td>
+                                <td>
+                                    @if (c.Status != "Solved")
+                                    {
+                                        <a asp-action="ResolveComplaint" asp-route-id="@c.Id" class="btn btn-sm btn-success rounded-pill px-3">Mark Solved</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="tab-providers">
+                <table class="table align-middle">
+                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Status</th><th>Control</th></tr></thead>
+                    <tbody>
+                        @foreach (var p in providers)
+                        {
+                            <tr>
+                                <td class="fw-bold">@p.FullName</td>
+                                <td class="text-muted">@p.Email</td>
+                                <td>
+                                    <span class="badge @(p.IsVerified ? "bg-success" : "bg-warning text-dark")">
+                                        @(p.IsVerified ? "Verified" : "Pending Approval")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (!p.IsVerified)
+                                    {
+                                        <a asp-action="VerifyProvider" asp-route-id="@p.Id" class="btn btn-sm btn-success rounded-pill px-3">Approve</a>
+                                    }
+                                    <a asp-action="DeleteUser" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Delete this provider?')">Remove</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="tab-customers">
+                <table class="table align-middle">
+                    <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Joined Date</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var cust in customers)
+                        {
+                            <tr>
+                                <td class="fw-bold">@cust.FullName</td>
+                                <td class="text-muted">@cust.Email</td>
+                                <td>@cust.CreatedAt.ToShortDateString()</td>
+                                <td>
+                                    <a asp-action="DeleteUser" asp-route-id="@cust.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Delete this customer?')">Remove Account</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="tab-earnings">
+                <div class="text-center py-5">
+                    <div class="display-1 text-success mb-3 pulse-text"><i class="bi bi-wallet2"></i></div>
+                    <h4 class="text-muted">Current Platform Profits (10%)</h4>
+                    <h1 class="display-4 fw-bold text-dark">@totalProfit.ToString("0.00") EGP</h1>
+                    <p class="text-muted mt-3">This balance represents the 10% commission collected from all completed services.</p>
+                    <hr class="w-50 mx-auto" />
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-md-6">
+                            <div class="p-4 bg-light rounded-4 border shadow-sm">
+                                <h6 class="text-uppercase small fw-bold text-muted mb-2">Total Service Volume</h6>
+                                <h4 class="mb-0 fw-bold" style="color: var(--primary-dark);">@((totalProfit > 0 ? (totalProfit / 0.10m) : 0m).ToString("0.00")) EGP</h4>
+                                <small class="text-muted">Total value of jobs before commission</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-dark: #1a237e; /* الكحلي الأساسي */
+        --primary-light: #3f51b5; /* أزرق فاتح للهوية */
+        --accent-blue: #00bcd4; /* السماوي للـ info */
+        --bg-light: #f8f9fa;
+        --text-muted: #6c757d;
+    }
+
+    /* كروت الإحصائيات - توحيد التصميم مع اختلافات بسيطة في الحدود السفلية */
+    .stats-card {
+        border: none;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        background: white;
+        border-bottom: 4px solid var(--primary-dark);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+        }
+
+    /* تخصيص كارت الأرباح ليكون مميزاً بلون الهوية الداكن */
+    .card-profits {
+        background: var(--primary-dark) !important;
+        color: white !important;
+        border: none !important;
+        border-left: 5px solid var(--accent-blue) !important;
+    }
+
+        .card-profits .text-info {
+            color: var(--accent-blue) !important;
+        }
+
+    /* توحيد ألوان الـ Tabs */
+    .nav-pills .nav-link {
+        color: var(--text-muted);
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 20px;
+        margin-right: 5px;
+        transition: 0.3s;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-dark) !important;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2);
+        }
+
+    /* حاوية الجدول الزجاجية / البيضاء */
+    .glass-container {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.03);
+        border: 1px solid #f1f1f1;
+    }
+
+    /* تنسيق الجدول */
+    .table thead th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background-color: var(--bg-light);
+        color: var(--text-muted);
+        border-bottom: 2px solid #eee;
+    }
+
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: rgba(26, 35, 126, 0.02);
+        }
+
+    /* أنيميشن النبض الهادئ */
+    .pulse-text {
+        animation: soft-pulse 2s infinite;
+    }
+
+    @@keyframes soft-pulse {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.8;
+            transform: scale(1.01);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>

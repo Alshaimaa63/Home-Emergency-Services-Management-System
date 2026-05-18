@@ -1,0 +1,95 @@
+﻿@model HomeServices.Models.Request
+
+@{
+    ViewData["Title"] = "Edit Request";
+}
+
+<link rel="stylesheet" href="~/css/home.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-lg overflow-hidden animate__animated animate__fadeIn" style="border-radius: 15px;">
+                <div class="row g-0">
+                    <!-- Left Side: Professional Navy Branding -->
+                    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center text-white p-4" 
+                         style="background: #1a237e;">
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-tools fa-3x opacity-50"></i>
+                            </div>
+                            <h3 class="fw-bold">ServicePro</h3>
+                            <p class="small opacity-75">Refine your request details to ensure the best service experience.</p>
+                            
+                            <div class="mt-4 p-2 border border-light border-opacity-25 rounded shadow-sm">
+                                <span class="text-uppercase x-small d-block opacity-50">Current Status</span>
+                                <span class="fw-bold">@Model.Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Clean Form -->
+                    <div class="col-md-8 p-4 p-lg-5 bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                            <h2 class="fw-bold m-0" style="color: #1a237e;">Edit Your Request</h2>
+                            <a asp-action="Index" class="btn btn-light btn-sm rounded-pill px-3 border">
+                                <i class="fas fa-chevron-left me-1"></i> Back
+                            </a>
+                        </div>
+
+                        <form asp-action="Edit">
+                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                            
+                            <input type="hidden" asp-for="Id" />
+
+                            <div class="row">
+                                <!-- Service Type -->
+                                <div class="col-12 mb-4">
+                                    <label asp-for="CategoryId" class="form-label fw-bold text-secondary small">SERVICE TYPE</label>
+                                    <div class="input-group border rounded-3 overflow-hidden">
+                                        <span class="input-group-text bg-light border-0"><i class="fas fa-list text-primary"></i></span>
+                                        <select asp-for="CategoryId" class="form-select border-0 shadow-none py-2" asp-items="ViewBag.CategoryId"></select>
+                                    </div>
+                                    <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Schedule -->
+                                <div class="col-12 mb-4">
+                                    <label asp-for="PreferredSchedule" class="form-label fw-bold text-secondary small">PREFERRED SCHEDULE</label>
+                                    <div class="input-group border rounded-3 overflow-hidden">
+                                        <span class="input-group-text bg-light border-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                                        <input asp-for="PreferredSchedule" class="form-control border-0 shadow-none py-2" type="datetime-local" />
+                                    </div>
+                                    <span asp-validation-for="PreferredSchedule" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="col-12 mb-4">
+                                    <label asp-for="Description" class="form-label fw-bold text-secondary small">REQUEST DESCRIPTION</label>
+                                    <textarea asp-for="Description" class="form-control border bg-light shadow-none p-3" rows="4" style="border-radius: 10px;"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary px-4 py-2 fw-bold" 
+                                        style="background: #1a237e; border: none; border-radius: 8px;">
+                                    <i class="fas fa-check-circle me-2"></i> Save Changes
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-danger px-4 py-2" style="border-radius: 8px;">
+                                    Discard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

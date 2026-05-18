@@ -1,0 +1,301 @@
+﻿@model HomeServices.Models.Request
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Request Details";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var statusClass = Model.Status == "Pending" ? "bg-primary-subtle text-primary" :
+                     Model.Status == "Completed" ? "bg-success-subtle text-success" :
+                     Model.Status == "Accepted" ? "bg-info-subtle text-info" : "bg-secondary-subtle text-secondary";
+}
+
+<link rel="stylesheet" href="~/css/details.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="details-bg py-5" style="background-color: #f4f7f6; min-height: 100vh;">
+    <div class="container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4 border-0 border-start border-4 border-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4 border-0 border-start border-4 border-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="details-card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+            @* Header *@
+            <div class="details-header d-flex justify-content-between align-items-center p-4" style="background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: white;">
+                <div>
+                    <h2 class="fw-bold mb-1">Request #@Model.Id.ToString("D5")</h2>
+                    <p class="opacity-75 mb-0">Created on @Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                </div>
+                <div class="status-pill-large @statusClass px-4 py-2 rounded-pill fw-bold shadow-sm bg-white">
+                    <i class="fas fa-circle fs-xs me-2" style="font-size: 8px;"></i> @Model.Status
+                </div>
+            </div>
+
+            <div class="p-4 p-md-5 bg-white">
+                <div class="row g-5">
+                    @* Left Column: Info & Offers *@
+                    <div class="col-md-7">
+                        <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-info-circle me-2 text-primary"></i>Service Information</h5>
+
+                        @if (User.IsInRole("ServiceProvider"))
+                        {
+                            <div class="mb-4 p-3 bg-light rounded-3 border-start border-4 border-primary shadow-sm">
+                                <label class="small text-muted fw-bold text-uppercase d-block mb-2">Requested By</label>
+                                <a asp-controller="Account" asp-action="Profile" asp-route-id="@Model.CustomerId" class="text-decoration-none d-flex align-items-center">
+                                    @if (Model.Customer != null && !string.IsNullOrEmpty(Model.Customer.ProfilePicture))
+                                    {
+                                        <img src="~/img/@Model.Customer.ProfilePicture" class="rounded-circle me-2 border border-2 border-white shadow-sm" style="width:40px; height:40px; object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="https://ui-avatars.com/api/?name=@Model.Customer?.FullName&background=random" class="rounded-circle me-2 border border-2 border-white shadow-sm" style="width:40px; height:40px;" />
+                                    }
+                                    <span class="fw-bold text-primary">@Model.Customer?.FullName <i class="fas fa-external-link-alt ms-1 small opacity-50"></i></span>
+                                </a>
+                            </div>
+                        }
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="info-label text-muted small fw-bold text-uppercase">Service Type</div>
+                                <div class="info-value mt-1">
+                                    <span class="badge border text-dark px-3 py-2 rounded-pill bg-light">@Model.Category?.Name</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-label text-muted small fw-bold text-uppercase">Preferred Schedule</div>
+                                <div class="info-value mt-1 fw-bold text-dark">@Model.PreferredSchedule.ToString("f")</div>
+                            </div>
+                        </div>
+
+                        <div class="info-label text-muted small fw-bold text-uppercase">Detailed Description</div>
+                        <div class="info-value text-muted fw-normal mt-1 mb-5" style="line-height: 1.6;">
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
+                        </div>
+
+                        @* 🔥 قسم التقييم عند اكتمال الطلب 🔥 *@
+                        @if (Model.Status == "Completed")
+                        {
+                            <div class="evaluation-section p-4 rounded-4 border shadow-sm mb-5" style="background-color: #fff9e6; border-left: 5px solid #ffc107 !important;">
+                                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-star text-warning me-2"></i> Service Review</h5>
+                                @if (Model.ServiceReviews != null && Model.ServiceReviews.Any())
+                                {
+                                    <div class="p-3 bg-white rounded-3 border">
+                                        <div class="text-warning mb-2 fs-5">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="@(i <= Model.ServiceReviews.First().Rating ? "fas" : "far") fa-star"></i>
+                                            }
+                                        </div>
+                                        <p class="mb-0 text-muted fst-italic">"@Model.ServiceReviews.First().Comment"</p>
+                                    </div>
+                                }
+                                else if (User.IsInRole("Customer"))
+                                {
+                                    <form asp-controller="Reviews" asp-action="SubmitReview" method="post">
+                                        <input type="hidden" name="RequestId" value="@Model.Id" />
+                                        <input type="hidden" name="ServiceProviderId" value="@Model.ServiceProviderId" />
+                                        <div class="mb-3">
+                                            <div class="star-rating d-flex flex-row-reverse justify-content-end fs-3">
+                                                <input type="radio" name="Rating" value="5" id="star5" required><label for="star5" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="4" id="star4"><label for="star4" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="3" id="star3"><label for="star3" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="2" id="star2"><label for="star2" class="fas fa-star"></label>
+                                                <input type="radio" name="Rating" value="1" id="star1"><label for="star1" class="fas fa-star"></label>
+                                            </div>
+                                        </div>
+                                        <textarea name="Comment" class="form-control mb-3" rows="3" placeholder="Tell us about the service..." required></textarea>
+                                        <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold">Submit Review</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+
+                        @* 🔥 قسم العروض المتاحة (التصميم الجديد) 🔥 *@
+                        <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-tags me-2 text-primary"></i> Service Offers</h5>
+                        @if (Model.Offers != null && Model.Offers.Any())
+                        {
+                            @foreach (var offer in Model.Offers)
+                            {
+                                <div class="card border-0 shadow-sm rounded-4 mb-3 offer-card @(offer.IsAccepted ? "border-start border-4 border-success" : "")">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex">
+                                                <img src="@(!string.IsNullOrEmpty(offer.Provider?.ProfilePicture) ? "/img/" + offer.Provider.ProfilePicture : "https://ui-avatars.com/api/?name=" + offer.Provider?.FullName)"
+                                                     class="rounded-circle shadow-sm me-3" style="width: 65px; height: 65px; object-fit: cover;" />
+                                                <div>
+                                                    <h5 class="fw-bold mb-1">
+                                                        <a asp-controller="Account" asp-action="Profile" asp-route-id="@offer.ServiceProviderId" class="text-dark text-decoration-none hover-blue">
+                                                            @offer.Provider?.FullName
+                                                        </a>
+                                                    </h5>
+                                                    <div class="text-muted small fw-bold mb-2">
+                                                        <i class="fas fa-tools text-primary me-1"></i> @(offer.Provider?.Specialty ?? "Specialist")
+                                                        <span class="ms-3 text-warning">
+                                                            <i class="fas fa-star"></i>
+                                                            @{
+                                                                var avg = offer.Provider?.ReviewsReceived?.Any() == true ? offer.Provider.ReviewsReceived.Average(r => r.Rating) : 0;
+                                                            }
+                                                            <span class="text-dark">@(avg > 0 ? avg.ToString("0.0") : "New")</span>
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-muted mb-0 small" style="max-width: 450px;">
+                                                        <i class="fas fa-quote-left opacity-25 me-1"></i>
+                                                        @{
+                                                            var bio = offer.Provider?.Bio ?? "Professional service provider ready to help.";
+                                                            var shortBio = bio.Length > 85 ? bio.Substring(0, 85) + "..." : bio;
+                                                        }
+                                                        @shortBio
+                                                        @if (bio.Length > 85)
+                                                        {
+                                                            <a asp-controller="Account" asp-action="Profile" asp-route-id="@offer.ServiceProviderId" class="text-primary small text-decoration-none">Read more</a>
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <h4 class="fw-bold text-primary mb-2">@offer.Amount.ToString("N2") EGP</h4>
+                                                @if (Model.Status == "Pending" && User.IsInRole("Customer") && Model.CustomerId == currentUserId)
+                                                {
+                                                    <form asp-action="AcceptOffer" method="post">
+                                                        <input type="hidden" name="offerId" value="@offer.Id" />
+                                                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold btn-sm">Accept Offer</button>
+                                                    </form>
+                                                }
+                                                else if (offer.IsAccepted)
+                                                {
+                                                    <span class="badge bg-success rounded-pill px-3 py-2">Accepted Offer</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 bg-light rounded-4 border-dashed">
+                                <i class="fas fa-hourglass-half fa-3x text-muted opacity-25 mb-3"></i>
+                                <p class="text-muted mb-0">No offers received yet. Providers are reviewing your request.</p>
+                            </div>
+                        }
+
+                        @* تقديم عرض جديد للفني *@
+                        @if (User.IsInRole("ServiceProvider") && Model.Status == "Pending" && !Model.Offers.Any(o => o.ServiceProviderId == currentUserId))
+                        {
+                            <div class="card mt-4 border-primary shadow-sm rounded-4" style="background-color: #eef2ff;">
+                                <div class="card-body p-4">
+                                    <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-paper-plane me-2"></i>Send Your Offer</h5>
+                                    <form asp-controller="Provider" asp-action="SubmitOffer" method="post">
+                                        <input type="hidden" name="RequestId" value="@Model.Id" />
+                                        <div class="row g-3">
+                                            <div class="col-sm-8">
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-white">EGP</span>
+                                                    <input type="number" name="Amount" class="form-control" placeholder="0.00" step="0.01" required />
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">Submit</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @* Right Column: Assigned Provider & Pricing *@
+                    <div class="col-md-5">
+                        <div class="provider-box p-4 shadow-sm border-0 mb-4" style="background-color: #f8f9fa; border-radius: 20px;">
+                            <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Service Provider</h5>
+                            @if (Model.Provider != null)
+                            {
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="@(!string.IsNullOrEmpty(Model.Provider.ProfilePicture) ? "/img/" + Model.Provider.ProfilePicture : "https://ui-avatars.com/api/?name=" + Model.Provider.FullName)"
+                                         class="rounded-circle shadow-sm me-3" style="width:70px; height:70px; object-fit:cover;" />
+                                    <div>
+                                        <h6 class="fw-bold mb-1 fs-5">@Model.Provider.FullName</h6>
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill">Assigned Professional</span>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <a asp-controller="Account" asp-action="Profile" asp-route-id="@Model.ServiceProviderId" class="btn btn-outline-dark btn-sm rounded-pill">View Full Profile</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center mx-auto mb-3" style="width:70px; height:70px;">
+                                        <i class="fas fa-user-clock fa-2x text-secondary opacity-25"></i>
+                                    </div>
+                                    <p class="text-muted small">Wait for providers to send offers</p>
+                                </div>
+                            }
+                            <hr class="my-4">
+                            <div class="pricing-details">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Agreed Cost</span>
+                                    <span class="fw-bold">@(Model.FinalPrice?.ToString("N2") ?? "--") EGP</span>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-3 mt-3">
+                                    <span class="fw-bold fs-5">Total Price</span>
+                                    <span class="fw-bold text-primary fs-4">@(Model.FinalPrice?.ToString("N2") ?? "Pending") EGP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-4 shadow-sm">
+                            <h6 class="fw-bold"><i class="fas fa-shield-alt me-2"></i>Secure Payment</h6>
+                            <small>Payments are held in escrow and only released to the provider after you mark the service as completed.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-blue:hover {
+        color: #1a237e !important;
+        text-decoration: underline !important;
+    }
+
+    .offer-card {
+        transition: transform 0.2s ease;
+    }
+
+        .offer-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        color: #ddd;
+        cursor: pointer;
+        transition: 0.2s;
+        padding: 0 5px;
+    }
+
+        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label {
+            color: #ffc107;
+        }
+
+    .border-dashed {
+        border: 2px dashed #dee2e6 !important;
+    }
+</style>

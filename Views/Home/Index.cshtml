@@ -1,8 +1,162 @@
-﻿@{
+﻿@model IEnumerable<HomeServices.Models.Category>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@* الملف الخاص بالتنسيقات *@
+<link rel="stylesheet" href="~/css/home.css" />
+
+<section class="hero-section animate__animated animate__fadeIn">
+    <div class="container text-center">
+        <h1 class="hero-title animate__animated animate__zoomIn">Your Home, Mastered</h1>
+        <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">
+            Connect with the finest local artisans and service professionals who treat your home with the mastery it deserves.
+        </p>
+
+        @if (!User.IsInRole("ServiceProvider") && !User.IsInRole("Admin"))
+        {
+            <form asp-controller="Home" asp-action="Index" method="get">
+                <div class="search-bar-container animate__animated animate__fadeInUp animate__delay-1s">
+                    <input type="text" name="searchString" value="@ViewData["SearchQuery"]" placeholder="Search for services (e.g. plumbing, cleaning)...">
+                    <button type="submit" class="btn-find">Find Artisan</button>
+                </div>
+            </form>
+        }
+        else if (User.IsInRole("ServiceProvider"))
+        {
+            <div class="mt-4 animate__animated animate__fadeInUp">
+                <a asp-controller="Provider" asp-action="AvailableRequests" class="btn-provider-mission">
+                    <i class="fas fa-search-dollar me-2"></i>Explore Available Jobs
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@if (!User.IsInRole("ServiceProvider") && !User.IsInRole("Admin"))
+{
+    <div class="container my-5">
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-warning animate__animated animate__shakeX" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.ErrorMessage
+                <br />
+                <a asp-action="Index" class="alert-link">Show all services</a>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(ViewData["SearchQuery"]?.ToString()))
+        {
+            <h3 class="mb-4">Results for "@ViewData["SearchQuery"]"</h3>
+        }
+
+        <div class="row g-4">
+            @* 1. عرض الخدمات الديناميكية (مع استثناء النجارة لو موجودة عشان م تتكررش) *@
+            @foreach (var item in Model)
+            {
+                // لو الخدمة هي النجارة، م تعرضهاش هنا لأننا ضايفينها يدوي تحت بالـ ID بتاعها
+                if (item.Name.Contains("Carpentry")) continue;
+
+                string imageUrl = "https://images.unsplash.com/photo-1581578731522-7455051462c1?q=80&w=800&auto=format&fit=crop";
+
+                if (item.Name.Contains("Plumbing"))
+                    imageUrl = "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
+                else if (item.Name.Contains("Electricity"))
+                    imageUrl = "https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=800&auto=format&fit=crop";
+                else if (item.Name.Contains("Cleaning"))
+                    imageUrl = "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=800&auto=format&fit=crop";
+                else if (item.Name.Contains("Painting"))
+                    imageUrl = "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=800&auto=format&fit=crop";
+
+                <div class="col-md-4 scroll-reveal">
+                    <div class="service-card shadow-sm" onclick="location.href='@Url.Action("Create", "Requests", new { categoryId = item.Id })'">
+                        <img src="@imageUrl" alt="@item.Name" class="service-img">
+                        <div class="service-card-overlay">
+                            <small class="text-uppercase fw-bold text-info">Service</small>
+                            <h4 class="fw-bold text-white">@item.Name</h4>
+                            <p class="small mb-0 text-white-50">@item.Description</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<section class="py-5 bg-white shadow-sm mt-5">
+    <div class="container text-center">
+        <h2 class="section-heading mb-5 fw-bold">Crafted for Quality</h2>
+        <div class="row g-4">
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box p-4 bg-light rounded-4 h-100">
+                    <div class="icon-circle">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <h5 class="fw-bold">Vetted Artisans</h5>
+                    <p class="text-muted small">Every professional undergoes a rigorous background check.</p>
+                </div>
+            </div>
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box p-4 bg-light rounded-4 h-100">
+                    <div class="icon-circle">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5 class="fw-bold">Precision Scheduling</h5>
+                    <p class="text-muted small">Book with exact time windows that respect your lifestyle.</p>
+                </div>
+            </div>
+            <div class="col-md-4 scroll-reveal">
+                <div class="feature-box p-4 bg-light rounded-4 h-100">
+                    <div class="icon-circle">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5 class="fw-bold">Craft Guarantee</h5>
+                    <p class="text-muted small">Comprehensive quality and safety protection on every job.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const observerOptions = {
+            root: null,
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = '0.5s';
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+}
+
+<style>
+    .service-card {
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        height: 300px; /* توحيد الطول للكروت */
+    }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+
+    .service-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>

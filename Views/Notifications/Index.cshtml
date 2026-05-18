@@ -1,0 +1,96 @@
+﻿@model IEnumerable<HomeServices.Models.Notification>
+@{
+    ViewData["Title"] = "My Notifications";
+}
+
+<style>
+    .notification-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+    .unread-notification {
+        background-color: #f0f7ff !important;
+        border-left-color: #1a237e !important;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: #e8eaf6;
+        color: #1a237e;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h4 class="mb-0 fw-bold" style="color: #1a237e;">
+                <i class="fas fa-bell me-2"></i> Notifications
+            </h4>
+            @if (Model.Any(n => !n.IsRead))
+            {
+                <span class="badge rounded-pill bg-danger animate__animated animate__pulse animate__infinite">
+                    @Model.Count(n => !n.IsRead) New
+                </span>
+            }
+        </div>
+
+        <div class="list-group list-group-flush">
+            @if (!Model.Any())
+            {
+                <div class="p-5 text-center text-muted">
+                    <div class="mb-3">
+                        <i class="fas fa-bell-slash fa-4x opacity-25"></i>
+                    </div>
+                    <h5>All caught up!</h5>
+                    <p>No new updates for you yet. Check back later.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in Model.OrderByDescending(n => n.CreatedAt))
+                {
+                    @* عند الضغط، نتوجه للرابط المخزن في الإشعار *@
+                    <a href="@item.TargetUrl" class="list-group-item list-group-item-action py-3 notification-item @(item.IsRead ? "" : "unread-notification")">
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon me-3">
+                                <i class="fas @(item.Message.Contains("offer") ? "fa-tag" : item.Message.Contains("rated") ? "fa-star" : "fa-info-circle")"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="@(item.IsRead ? "text-secondary" : "text-dark fw-bold")">@item.Message</span>
+                                    <small class="text-muted ms-2">
+                                        <i class="far fa-clock me-1"></i>@item.CreatedAt.ToString("MMM dd, HH:mm")
+                                    </small>
+                                </div>
+                            </div>
+                            @if (!item.IsRead)
+                            {
+                                <div class="ms-3">
+                                    <i class="fas fa-circle text-primary" style="font-size: 8px;"></i>
+                                </div>
+                            }
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="card-footer bg-light text-center py-2">
+                <small class="text-muted">Stay updated with your latest service activities.</small>
+            </div>
+        }
+    </div>
+</div>

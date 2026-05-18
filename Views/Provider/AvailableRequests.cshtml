@@ -1,0 +1,58 @@
+﻿@model IEnumerable<HomeServices.Models.Request>
+@{
+    ViewData["Title"] = "Available Jobs";
+}
+<link rel="stylesheet" href="~/css/history.css" />
+
+<div class="history-bg">
+    <div class="container">
+        <div class="mb-5">
+            <h2 class="fw-bold" style="color: #1a237e;">Available Jobs</h2>
+            <p class="text-muted">The following requests are currently waiting for a service provider. View details to send your price offer.</p>
+        </div>
+
+        <div class="custom-table-container shadow-sm border rounded">
+            <table class="table mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Request Info</th>
+                        <th>Service Type</th>
+                        <th>Date Posted</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">Request #@item.Id.ToString("D5")</div>
+                                <div class="text-muted small text-truncate" style="max-width: 250px;">@item.Description</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">@item.Category?.Name</span>
+                            </td>
+                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end pe-4">
+                                <!-- التعديل: بدل الفورم والقبول المباشر، بنفتح صفحة التفاصيل -->
+                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                                    View & Offer <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-search fa-3x mb-3 d-block opacity-25"></i>
+                                No available requests at the moment.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

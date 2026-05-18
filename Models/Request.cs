@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HomeServices.Models
 {
@@ -6,30 +7,55 @@ namespace HomeServices.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "يرجى وصف المشكلة")]
-        [MinLength(10)]
+        [Required(ErrorMessage = "Please describe the problem")]
+        [MinLength(10, ErrorMessage = "Description must be at least 10 characters long")]
+        [Display(Name = "Request Description")]
         public string Description { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Please select your preferred schedule")]
+        [Display(Name = "Preferred Schedule")]
         public DateTime PreferredSchedule { get; set; }
 
-        public string Status { get; set; } = "Pending"; // Pending, Accepted, Completed, Cancelled
+        [Display(Name = "Request Status")]
+        public string Status { get; set; } = "Pending";
 
+        [Range(1, 5)]
+        [Display(Name = "Rating")]
         public int? Rating { get; set; }
+
+        [Display(Name = "Feedback Comment")]
         public string? FeedbackComment { get; set; }
 
-        // العلاقات
+        [Display(Name = "Final Price")]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? FinalPrice { get; set; }
+
+        // --- التعديل هنا ---
+        // أضفنا علامة الاستفهام لتجنب مشكلة "The Offers field is required"
+        public virtual ICollection<ServiceOffer>? Offers { get; set; }
+        // --------------------
+
         [Required]
+        [Display(Name = "Customer")]
         public string CustomerId { get; set; }
+
+        [ForeignKey("CustomerId")]
         public virtual ApplicationUser Customer { get; set; }
 
         [Required]
+        [Display(Name = "Service Category")]
         public int CategoryId { get; set; }
+
         public virtual Category Category { get; set; }
 
-        public string? ProviderId { get; set; }
-        public virtual ApplicationUser Provider { get; set; }
+        [Display(Name = "Service Provider")]
+        public string? ServiceProviderId { get; set; }
 
+        [ForeignKey("ServiceProviderId")]
+        public virtual ApplicationUser? Provider { get; set; }
+
+        [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public virtual ICollection<ServiceReview> ServiceReviews { get; set; } = new HashSet<ServiceReview>();
     }
 }
