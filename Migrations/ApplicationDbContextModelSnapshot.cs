@@ -119,8 +119,8 @@ namespace HomeServices.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "d26ba1aa-b5cf-4bcc-a596-ca2be8230d07",
-                            CreatedAt = new DateTime(2026, 5, 14, 13, 45, 7, 327, DateTimeKind.Local).AddTicks(4446),
+                            ConcurrencyStamp = "03d9c48e-73f5-4c7c-bd41-2ee39adaf064",
+                            CreatedAt = new DateTime(2026, 5, 18, 3, 9, 8, 610, DateTimeKind.Local).AddTicks(2373),
                             Email = "admin@home.com",
                             EmailConfirmed = true,
                             FullName = "System Admin",
@@ -128,10 +128,10 @@ namespace HomeServices.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@HOME.COM",
                             NormalizedUserName = "ADMIN@HOME.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEARFIMpZHE/pg5Vd53eDd2iBrsj0gI7a4L55CbEDLmj0Snv4fuJJj665AcEh5hyvUw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENFf/zDVMhGOxVNHq89yqjnGyDcfSrPuYZ03tsNB9o4djZetMYEZx85nNzCGBvFFOA==",
                             PhoneNumberConfirmed = false,
                             ProfilePicture = "default-user.png",
-                            SecurityStamp = "f10a81d2-9f46-42a8-a1a5-88c354463b4c",
+                            SecurityStamp = "8f42d32f-45d0-43f3-a226-ba676a8b3dbb",
                             TwoFactorEnabled = false,
                             UserName = "admin@home.com",
                             WalletBalance = 0.00m

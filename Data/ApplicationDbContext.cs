@@ -24,7 +24,6 @@ namespace HomeServices.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-
             base.OnModelCreating(builder);
 
             // --- إعداد العلاقات (Relationships) ---
@@ -116,8 +115,8 @@ namespace HomeServices.Data
             });
 
             builder.Entity<ApplicationUser>()
-            .Property(u => u.Bio)
-            .HasMaxLength(1000);
+                .Property(u => u.Bio)
+                .HasMaxLength(1000);
         }
     }
 }

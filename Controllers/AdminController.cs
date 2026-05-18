@@ -45,7 +45,7 @@ namespace HomeServices.Controllers
                     customers.Add(user);
             }
 
-            // 🔥 حساب أرباح الموقع (الـ 10%) ديناميكياً من الطلبات المنتهية 🔥
+            // حساب أرباح الموقع (الـ 10%) ديناميكياً من الطلبات المنتهية
             var totalCompletedRequestsValue = requests
                 .Where(r => r.Status == "Completed" || r.Status == "Finished")
                 .Sum(r => (decimal?)r.FinalPrice ?? 0m);
@@ -53,7 +53,6 @@ namespace HomeServices.Controllers
             ViewBag.TotalAdminProfit = totalCompletedRequestsValue * 0.10m; // إجمالي العمولات المستحقة للموقع
 
             // جلب محفظة الأدمن الفعلية (التي تتحدث عند كل عملية Finish)
-            // تأكدي أن الإيميل هنا مطابق لإيميل الأدمن المسجل في قاعدة البيانات
             var admin = await _userManager.FindByEmailAsync("admin@servicepro.com");
             ViewBag.AdminWallet = admin?.WalletBalance ?? 0;
 
@@ -106,8 +105,29 @@ namespace HomeServices.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user != null)
             {
+                // 1. مسح الإشعارات المتعلقة بهذا اليوزر
+                var userNotifications = _context.Notifications.Where(n => n.UserId == id);
+                _context.Notifications.RemoveRange(userNotifications);
+
+                // 2. مسح العروض (Offers) المقدمة من الفني أو المرتبطة بطلبات العميل
+                var userOffers = _context.ServiceOffers.Where(o => o.ServiceProviderId == id || o.Request.CustomerId == id);
+                _context.ServiceOffers.RemoveRange(userOffers);
+
+                // 3. مسح التقييمات من جدول ServiceReviews الموحد
+                var userReviews = _context.ServiceReviews.Where(r => r.CustomerId == id || r.ServiceProviderId == id);
+                _context.ServiceReviews.RemoveRange(userReviews);
+
+                // 4. مسح الطلبات (Requests) المرتبطة بهذا اليوزر (سواء كان كعميل أو كفني)
+                var userRequests = _context.Requests.Where(r => r.CustomerId == id || r.ServiceProviderId == id);
+                _context.Requests.RemoveRange(userRequests);
+
+                // حفظ التغييرات المؤثرة على الجداول الفرعية أولاً
+                await _context.SaveChangesAsync();
+
+                // 5. مسح حساب اليوزر الأساسي نهائياً
                 await _userManager.DeleteAsync(user);
-                TempData["Success"] = "User account has been permanently deleted.";
+
+                TempData["Success"] = "User account and all related operational histories have been permanently deleted.";
             }
             return RedirectToAction("Dashboard");
         }
@@ -174,7 +194,7 @@ namespace HomeServices.Controllers
             if (ModelState.IsValid)
             {
                 review.CreatedAt = DateTime.Now;
-                _context.ServiceReviews.Add(review);
+                _context.ServiceReviews.Add(review); // تعديل اسم الجدول ليتوافق مع الـ DbContext الموحد
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Thank you for your feedback!";

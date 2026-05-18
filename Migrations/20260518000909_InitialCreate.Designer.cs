@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260514093607_ExpandBioColumn")]
-    partial class ExpandBioColumn
+    [Migration("20260518000909_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,8 +38,8 @@ namespace HomeServices.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -122,8 +122,8 @@ namespace HomeServices.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "bbd9455f-3271-444d-ac8c-665ef301e4d5",
-                            CreatedAt = new DateTime(2026, 5, 14, 12, 36, 5, 992, DateTimeKind.Local).AddTicks(1044),
+                            ConcurrencyStamp = "03d9c48e-73f5-4c7c-bd41-2ee39adaf064",
+                            CreatedAt = new DateTime(2026, 5, 18, 3, 9, 8, 610, DateTimeKind.Local).AddTicks(2373),
                             Email = "admin@home.com",
                             EmailConfirmed = true,
                             FullName = "System Admin",
@@ -131,10 +131,10 @@ namespace HomeServices.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@HOME.COM",
                             NormalizedUserName = "ADMIN@HOME.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEB8+/255qaMjKLrGohgLTqYklBFZqRz8A52b09fvJYP21LBp0u22LyFICunxoeu1dw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENFf/zDVMhGOxVNHq89yqjnGyDcfSrPuYZ03tsNB9o4djZetMYEZx85nNzCGBvFFOA==",
                             PhoneNumberConfirmed = false,
                             ProfilePicture = "default-user.png",
-                            SecurityStamp = "6a972e0d-2e04-4501-9696-4f5a2c664bf3",
+                            SecurityStamp = "8f42d32f-45d0-43f3-a226-ba676a8b3dbb",
                             TwoFactorEnabled = false,
                             UserName = "admin@home.com",
                             WalletBalance = 0.00m
