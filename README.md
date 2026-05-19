@@ -376,8 +376,8 @@ Add screenshots for:
 
 # 👨‍💻 Team Members
 
-Add your team members here.
-
+Shahd Ashraf , Alshaimaa Ashraf, Dina Aboueloyoun,
+Rawan Araby, Amany Mahmoud.
 ---
 
 # 📄 License
