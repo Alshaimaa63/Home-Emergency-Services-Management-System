@@ -333,7 +333,7 @@ namespace HomeServices.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "Address", "Bio", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "FullName", "IsVerified", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePicture", "SecurityStamp", "Specialty", "TwoFactorEnabled", "UserName", "WalletBalance" },
-                values: new object[] { "b74ddd14-6340-4840-95c2-db12554843e5", 0, null, null, "03d9c48e-73f5-4c7c-bd41-2ee39adaf064", new DateTime(2026, 5, 18, 3, 9, 8, 610, DateTimeKind.Local).AddTicks(2373), "admin@home.com", true, "System Admin", true, false, null, "ADMIN@HOME.COM", "ADMIN@HOME.COM", "AQAAAAIAAYagAAAAENFf/zDVMhGOxVNHq89yqjnGyDcfSrPuYZ03tsNB9o4djZetMYEZx85nNzCGBvFFOA==", null, false, "default-user.png", "8f42d32f-45d0-43f3-a226-ba676a8b3dbb", null, false, "admin@home.com", 0.00m });
+                values: new object[] { "b74ddd14-6340-4840-95c2-db12554843e5", 0, null, null, "5ca073aa-7adc-4253-89af-8f168002e55a", new DateTime(2026, 5, 19, 15, 44, 18, 21, DateTimeKind.Local).AddTicks(2678), "admin@home.com", true, "System Admin", true, false, null, "ADMIN@HOME.COM", "ADMIN@HOME.COM", "AQAAAAIAAYagAAAAENx82YwhchO2gBKaDUmz3WIWx9WA1A//7Bim0+Q/KxUglLXTgcwIWXIeXKK79Ib9NA==", null, false, "default-user.png", "6cc2e88b-49a5-4266-9ff8-8673f58cf544", null, false, "admin@home.com", 0.00m });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",

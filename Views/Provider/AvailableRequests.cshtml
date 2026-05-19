@@ -4,6 +4,24 @@
 }
 <link rel="stylesheet" href="~/css/history.css" />
 
+<style>
+    /* 1. إلغاء القيد الـ 100px القديم وإعطاء العمود مساحة مريحة للزرار */
+    .table th:last-child, .table td:last-child {
+        width: 160px !important; /* مساحة كافية جداً لفرد الزرار */
+        text-align: right !important;
+        vertical-align: middle !important;
+    }
+
+    /* 2. تنسيق إضافي لضمان ثبات النص جوه الزرار على سطر واحد وعدم انكساره */
+    .table td .btn {
+        white-space: nowrap !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+</style>
+
 <div class="history-bg">
     <div class="container">
         <div class="mb-5">
@@ -34,10 +52,11 @@
                             </td>
                             <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
                             <td class="text-end pe-4">
-                                <!-- التعديل: بدل الفورم والقبول المباشر، بنفتح صفحة التفاصيل -->
-                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@item.Id"
-                                   class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
-                                    View & Offer <i class="fas fa-arrow-right ms-1"></i>
+                                
+                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@item.Id" 
+                                   class="btn btn-sm rounded-pill px-4 shadow-sm text-white" 
+                                   style="background-color: var(--primary); border-color: var(--primary);">
+                                    View & Offer 
                                 </a>
                             </td>
                         </tr>

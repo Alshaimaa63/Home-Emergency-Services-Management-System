@@ -1,7 +1,6 @@
-﻿/* --- Global Brand Colors --- */
-:root {
-    --brand-navy: #1a237e;
-    --brand-cyan: #00bcd4;
+﻿:root {
+    --primary: #1a237e;
+    --accent: #00bcd4;
 }
 
 /* --- Hero Section --- */
@@ -16,7 +15,7 @@
 }
 
 .hero-title {
-    color: var(--brand-navy);
+    color: var(--primary);
     font-weight: 800;
     font-size: 4.5rem;
     letter-spacing: -1.5px;
@@ -45,17 +44,17 @@
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
 }
 
-    .search-bar-container input {
-        border: none;
-        padding: 12px 30px;
-        width: 100%;
-        outline: none;
-        font-size: 1.1rem;
-        border-radius: 50px 0 0 50px;
-    }
+.search-bar-container input {
+    border: none;
+    padding: 12px 30px;
+    width: 100%;
+    outline: none;
+    font-size: 1.1rem;
+    border-radius: 50px 0 0 50px;
+}
 
 .btn-find {
-    background-color: var(--brand-navy);
+    background-color: var(--primary);
     color: white;
     border: none;
     padding: 0 40px;
@@ -69,7 +68,7 @@
 }
 
     .btn-find:hover {
-        background-color: var(--brand-cyan);
+        background-color: var(--accent);
         color: white;
         transform: translateY(-2px);
     }
@@ -125,7 +124,7 @@
 
 /* --- Features Section --- */
 .section-heading {
-    color: var(--brand-navy);
+    color: var(--primary);
 }
 
 .feature-box {
@@ -135,15 +134,15 @@
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-    .feature-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
+.feature-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
 
 .icon-circle {
     width: 60px;
     height: 60px;
-    background: var(--brand-navy);
+    background: var(--primary);
     color: white;
     display: flex;
     align-items: center;

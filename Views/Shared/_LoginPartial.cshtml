@@ -5,14 +5,9 @@
 <ul class="navbar-nav align-items-center">
     @if (SignInManager.IsSignedIn(User))
     {
-        @* تم حذف دايرة البروفيل فقط من هنا وسيبنا الـ check بتاع الأدمن شغال *@
-        @if (!User.IsInRole("Admin"))
-        {
-            @* الجزء ده كان فيه دايرة البروفيل وشلناها عشان متبقاش مكررة مع اللي في الـ Layout *@
-        }
 
         <li class="nav-item ms-2">
-            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+            <form class="d-flex align-items-center m-0 p-0" asp-controller="Account" asp-action="Logout" method="post">
                 <button type="submit" class="nav-link btn btn-outline-danger btn-sm px-3 rounded-pill border-0 fw-bold">
                     <i class="fas fa-sign-out-alt me-1"></i> Logout
                 </button>
@@ -22,10 +17,10 @@
     else
     {
         <li class="nav-item">
-            <a class="nav-link fw-bold text-primary" asp-controller="Account" asp-action="Register">Register</a>
+           <a class="nav-link btn-nav-register" asp-controller="Account" asp-action="Register">Register</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link fw-bold" asp-controller="Account" asp-action="Login">Login</a>
+            <a class="nav-link btn-nav-login" asp-controller="Account" asp-action="Login">Login</a>
         </li>
     }
 </ul>

@@ -27,9 +27,34 @@
         }
 
         .navbar {
-            background: white !important;
-            border-bottom: 1px solid #eee;
-            padding: 12px 0;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-grow: 1; 
+            margin: 0 auto;
+            
+        }
+        
+        .navbar-collapse {
+            display: flex !important;
+            justify-content: flex-end !important; 
+            align-items: center !important;
+            width: 100%;
+        }
+
+        .navbar-nav {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex-grow: unset !important; 
+            margin: 0 auto !important;
+            gap: 30px !important;
+        }
+
+        .navbar-nav .nav-item {
+            display: flex !important;
+            align-items: center !important;
         }
 
         .navbar-brand {
@@ -40,25 +65,14 @@
 
         .nav-link {
             font-weight: 600;
-            color: #444 !important;
+            color: var(--primary) !important;
             padding: 0.5rem 12px !important;
+            transition: all 0.3s ease;
         }
 
-            .nav-link:hover {
-                color: var(--accent) !important;
-            }
-
-        .wallet-pill {
-            background: #f1f5f9;
-            border-radius: 50px;
-            padding: 6px 16px;
-            font-weight: 700;
-            color: var(--primary);
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 15px;
+        .nav-link:hover {
+            color: var(--accent) !important;
+            transform: translateY(-2px);
         }
 
         .bell-btn {
@@ -73,6 +87,7 @@
             position: relative;
             color: #444;
             margin-right: 15px;
+            transition: all 0.3s ease;   
         }
 
         .unread-dot {
@@ -86,6 +101,26 @@
             border: 2px solid #fff;
         }
 
+        .bell-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--accent);    
+            border-color: var(--accent); 
+            transform: translateY(-2px); 
+        }
+
+        .wallet-pill {
+            background: #f1f5f9;
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-weight: 700;
+            color: var(--primary);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
         .profile-link {
             display: flex;
             align-items: center;
@@ -93,15 +128,19 @@
             text-decoration: none;
             padding: 5px 15px;
             border-radius: 12px;
-            transition: 0.3s;
+            border: 1px solid transparent;
             background: transparent;
             color: var(--primary) !important;
             font-weight: 700;
+            transition: all 0.3s ease;
         }
 
-            .profile-link:hover {
-                background: #f8f9fa;
-            }
+        .profile-link:hover {
+            background-color: #f1f5f9; 
+            color: var(--accent) !important; 
+            /* border-color: var(--accent); */
+            transform: translateY(-2px); 
+        }
 
         .nav-profile-img {
             width: 38px;
@@ -110,13 +149,67 @@
             border-radius: 50%;
             border: 2px solid var(--primary);
         }
+
+       .profile-link:hover .nav-profile-img {
+            border-color: var(--accent);
+       }
+
+       .btn-nav-register {
+            font-weight: 700 !important;
+            padding: 0 20px !important; /* صفرنا الـ padding العمودي واعتمدنا على الـ height */
+            border-radius: 50px !important;
+            color: var(--primary) !important;
+            border: 1px solid var(--primary) !important;
+            background-color: transparent !important;
+            transition: all 0.3s ease !important;
+            margin-right: 8px !important;
+    
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important; 
+            height: 38px !important; /* ارتفاع ثابت ومثالي متناسق مع جرس الإشعارات */
+            width: auto !important; /* إجبار الزرار ألا ينفجر بكامل العرض */
+            box-sizing: border-box !important;
+        }
+
+        /* زر تسجيل الدخول في النافبار */
+        .btn-nav-login {
+            font-weight: 700 !important;
+            padding: 0 20px !important;
+            border-radius: 50px !important;
+            background-color: var(--primary) !important;
+            color: white !important;
+            border: 1px solid var(--primary) !important;
+            transition: all 0.3s ease !important;
+            margin-right: 0 !important;
+    
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            height: 38px !important; /* نفس الارتفاع بالظبط */
+            width: auto !important; /* إجبار الزرار ألا ينفجر بكامل العرض */
+            box-sizing: border-box !important;
+        }
+
+        /* الـ Hover السلس والموحد */
+        .btn-nav-register:hover,
+        .btn-nav-login:hover {
+       background-color: transparent !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 188, 212, 0.15);
+    }
     </style>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
             <div class="container">
-                @* 🔥 التعديل: تغيير اسم اللوجو للأدمن ليكون هو عنوان الداشبورد 🔥 *@
+                
+                @* change the admin logo *@
                 <a class="navbar-brand" asp-controller="@(User.IsInRole("Admin") ? "Admin" : "Home")" asp-action="@(User.IsInRole("Admin") ? "Dashboard" : "Index")">
                     <i class="fas fa-bolt text-info me-2"></i>
                     @(User.IsInRole("Admin") ? "ServicePro Admin Dashboard" : "ServicePro")
@@ -126,11 +219,13 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @* 🚫 تم حذف جملة System Admin Dashboard تماماً للأدمن ليكون اللوجو هو العنوان الوحيد 🚫 *@
-
+                            @* for user who not admin *@
                             if (!User.IsInRole("Admin"))
                             {
-                                @* روابط المستخدمين العاديين وفنيي الخدمة *@
+                                <li class="nav-item">
+                                    <a class="nav-link fw-bold" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+
                                 if (User.IsInRole("ServiceProvider"))
                                 {
                                     <li class="nav-item">
@@ -161,7 +256,7 @@
 
                             @if (!User.IsInRole("Admin"))
                             {
-                                @* 1. التنبيهات *@
+                                @* 1. the notifications *@
                                 var hasUnread = _context.Notifications.Any(n => n.UserId == userId && !n.IsRead);
                                 <a class="bell-btn" asp-controller="Notifications" asp-action="Index">
                                     <i class="far fa-bell fa-lg"></i>
@@ -171,13 +266,13 @@
                                     }
                                 </a>
 
-                                @* 2. المحفظة *@
+                                @* 2. the wallet *@
                                 <div class="wallet-pill d-none d-md-flex">
                                     <i class="fas fa-wallet opacity-50"></i>
                                     <span>@currentBalance.ToString("0.00") EGP</span>
                                 </div>
 
-                                @* 3. البروفايل *@
+                                @* 3. the profile *@
                                 <a class="profile-link shadow-sm" asp-controller="Account" asp-action="Profile">
                                     @if (currentUser != null && !string.IsNullOrEmpty(currentUser.ProfilePicture))
                                     {
@@ -192,7 +287,7 @@
                             }
                         }
 
-                        @* زر تسجيل الخروج وكلمة Welcome من الـ Partial *@
+                        @* the login, register, logout btns *@
                         <partial name="_LoginPartial" />
                     </div>
                 </div>
