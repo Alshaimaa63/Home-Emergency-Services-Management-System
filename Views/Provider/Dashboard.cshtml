@@ -2,6 +2,41 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 
+<style>
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .bg-success-subtle {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .bg-warning-subtle {
+        background-color: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .bg-soft-primary {
+        background-color: #e8eaf6;
+    }
+
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .clickable-task-row:hover {
+        background-color: rgba(26, 35, 126, 0.04) !important;
+        transition: all 0.2s ease-in-out;
+    }
+</style>
+
 @{
     ViewData["Title"] = "Pro Dashboard";
     var currentUser = await UserManager.GetUserAsync(User);
@@ -34,156 +69,153 @@
 
             @if (currentUser != null && currentUser.IsVerified)
             {
-                <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <a asp-action="AvailableRequests" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a237e; border-color: #1a237e;">
                     <i class="fas fa-search me-2"></i>Find New Jobs
                 </a>
             }
         </div>
 
-        @* --- قسم الإحصائيات --- *@
-        <div class="row g-4 mb-5 text-center">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
-                    <i class="fas fa-wallet fa-2x text-primary mb-3"></i>
-                    <h6 class="text-muted fw-bold small uppercase">Total Earnings</h6>
-                    <h2 class="fw-bold text-dark">@(ViewBag.TotalEarnings ?? "0.00") EGP</h2>
+        @* --- 🌟 قسم الإحصائيات المطور على ستايل الـ History 🌟 --- *@
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm p-4 h-100 position-relative custom-stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="card-icon-wrap earnings-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="mt-auto text-start">
+                        <h2 class="fw-bold text-dark mb-1">@(ViewBag.TotalEarnings ?? "0.00") <span class="fs-6 fw-normal text-muted">EGP</span></h2>
+                        <h6 class="text-muted fw-bold small text-uppercase tracking-wider m-0">Total Earnings</h6>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
-                    <i class="fas fa-check-double fa-2x text-success mb-3"></i>
-                    <h6 class="text-muted fw-bold small uppercase">Jobs Completed</h6>
-                    <h2 class="fw-bold text-dark">@(Model != null ? Model.Count(r => r.Status == "Completed" || r.Status == "Finished") : 0)</h2>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm p-4 h-100 position-relative custom-stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="card-icon-wrap completed-icon">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                    </div>
+                    <div class="mt-auto text-start">
+                        <h2 class="fw-bold text-dark mb-1">@(Model != null ? Model.Count(r => r.Status == "Completed" || r.Status == "Finished") : 0)</h2>
+                        <h6 class="text-muted fw-bold small text-uppercase tracking-wider m-0">Jobs Completed</h6>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #ffc107 !important; border-radius: 15px;">
-                    <i class="fas fa-star fa-2x text-warning mb-3"></i>
-                    <h6 class="text-muted fw-bold small uppercase">Reputation Score</h6>
-                    <h2 class="fw-bold text-dark">@(currentUser?.IsVerified == true ? "Verified Pro" : "New Member")</h2>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-4 h-100 text-white position-relative reputation-premium-card" style="background-color: #1a237e;">
+                    <div class="card-watermark">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    
+                    <div class="mb-2 text-start">
+                        <h6 class="text-white-50 text-uppercase small tracking-wider m-0" style="font-weight: 600;">Reputation Score</h6>
+                    </div>
+                    
+                    <div class="my-2 text-start">
+                        <h1 class="fw-bold display-5 mb-3">@(currentUser?.IsVerified == true ? "Verified Pro" : "New Member")</h1>
+                    </div>
+
+                    <div class="mt-auto d-flex align-items-center gap-2 pt-2 border-top border-white-10" style="border-color: rgba(255,255,255,0.1) !important;">
+                        <span class="small text-white-50">
+                            @if(currentUser?.IsVerified == true) {
+                                <span class="text-warning"><i class="fas fa-shield-alt me-1"></i> Official Provider</span>
+                            } else {
+                                <span><i class="fas fa-info-circle me-1"></i> Pending Badge Activation</span>
+                            }
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
         @* --- جدول المهام --- *@
-        <div class="card border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
-                <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-briefcase me-2 text-primary"></i>My Recent Tasks</h4>
-                <a asp-action="History" class="text-decoration-none fw-bold">View Full History <i class="fas fa-arrow-right ms-1"></i></a>
+        <div class="custom-table-container shadow-sm border rounded bg-white" style="border-radius: 20px !important; overflow: hidden;">
+            <div class="px-4 py-4 border-0 d-flex justify-content-between align-items-center bg-white">
+                <h4 class="fw-bold mb-0 style-color" style="color: #1a237e;"><i class="fas fa-briefcase me-2 text-primary"></i>My Recent Tasks</h4>
+                <a asp-action="History" class="text-decoration-none fw-bold" style="color: #1a237e;">View Full History <i class="fas fa-arrow-right ms-1"></i></a>
             </div>
-            <div class="card-body px-4 pb-4">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="py-3">Service & Client</th>
-                                <th class="py-3 text-center">Status</th>
-                                <th class="py-3">Date</th>
-                                <th class="py-3 text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model != null && Model.Any())
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 ps-4">Service & Client</th>
+                            <th class="py-3 text-center">Status</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3 text-center pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var request in Model.Take(10))
                             {
-                                foreach (var request in Model.Take(10))
-                                {
-                                    @* 🔥 التعديل هنا: جعل السطر بالكامل قابل للضغط 🔥 *@
-                                    <tr class="clickable-task-row" data-url="@Url.Action("Details", "Requests", new { id = request.Id })" style="cursor: pointer;">
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-soft-primary text-primary d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-weight: bold;">
-                                                    @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
-                                                </div>
-                                                <div>
-                                                    <div class="fw-bold text-dark">@request.Category?.Name</div>
-                                                    <span class="text-muted small">Client: @request.Customer?.FullName</span>
-                                                </div>
+                                <tr class="clickable-task-row" data-url="@Url.Action("Details", "Requests", new { id = request.Id })" style="cursor: pointer;">
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-soft-primary text-primary d-flex align-items-center justify-content-center me-3" style="width:40px; height:40px; font-weight: bold;">
+                                                @(request.Customer?.FullName?.Substring(0, 1) ?? "U")
                                             </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge rounded-pill @(request.Status == "Completed" || request.Status == "Finished" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3 py-2">
-                                                @request.Status
-                                            </span>
-                                        </td>
-                                        <td class="text-muted">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
-
-                                       
-                                        <td class="text-center" onclick="event.stopPropagation();">
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                    Details
-                                                </a>
-
-                                                @if (request.Status == "Accepted")
-                                                {
-                                                    <form asp-controller="Requests" asp-action="CompleteRequest" method="post" style="display:inline;">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="id" value="@request.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" onclick="return confirm('Mark this job as finished and collect your earnings (90%)?')">Finish</button>
-                                                    </form>
-                                                }
+                                            <div>
+                                                <div class="fw-bold text-dark">@request.Category?.Name</div>
+                                                <span class="text-muted small">Client: @request.Customer?.FullName</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="fas fa-folder-open fa-3x mb-3 d-block opacity-25"></i>
-                                        No active tasks found in your record.
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill @(request.Status == "Completed" || request.Status == "Finished" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") px-3 py-2">
+                                            @request.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
+
+                                    <td class="text-center pe-4" onclick="event.stopPropagation();">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-controller="Requests" asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                Details
+                                            </a>
+
+                                            @if (request.Status == "Accepted")
+                                            {
+                                                <form asp-controller="Requests" asp-action="CompleteRequest" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@request.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" onclick="return confirm('Mark this job as finished and collect your earnings (90%)?')">Finish</button>
+                                                </form>
+                                            }
+                                        </div>
                                     </td>
                                 </tr>
                             }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="py-5">
+                                    <div class="d-flex flex-column align-items-center justify-content-center my-4">
+                                        <div class="mb-3 text-muted opacity-25">
+                                            <i class="fas fa-folder-open fa-3x"></i>
+                                        </div>
+                                        <p class="text-muted fw-medium m-0 fs-6">No active tasks found in your record.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .table thead th {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .bg-success-subtle {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-    }
-
-    .bg-warning-subtle {
-        background-color: #fff3e0;
-        color: #ef6c00;
-    }
-
-    .bg-soft-primary {
-        background-color: #e8eaf6;
-    }
-
-    .card {
-        transition: transform 0.3s ease;
-    }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-    /* تأثير تمرير الماوس على السطر */
-    .clickable-task-row:hover {
-        background-color: rgba(26, 35, 126, 0.04) !important;
-        transition: all 0.2s ease-in-out;
-    }
-</style>
-
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // كود الجافا سكريبت للانتقال السريع
+            
             $(".clickable-task-row").click(function () {
                 window.location = $(this).data("url");
             });
