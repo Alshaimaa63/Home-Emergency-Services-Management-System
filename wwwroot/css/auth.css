@@ -5,7 +5,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #fcfcfc; /* Very light tint for contrast */
+    background-color: #fcfcfc; 
     padding: 20px;
 }
 
@@ -49,21 +49,21 @@
     margin-bottom: 5px;
 }
 
-    /* Icons inside the inputs */
-    .custom-input-group i:not(.pass-toggle) {
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #a0a0a0;
-        font-size: 1.1rem;
-        pointer-events: none;
-    }
+/* Icons inside the inputs */
+.custom-input-group i:not(.pass-toggle) {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
 
 .custom-control {
     width: 100%;
-    padding: 14px 20px 14px 55px; /* Extra left padding for the icon */
-    background-color: #f8f9fa; /* Light grey fill from register.png */
+    padding: 14px 20px 14px 55px; 
+    background-color: #f8f9fa; 
     border: 1px solid #e9ecef;
     border-radius: 12px;
     font-size: 1rem;
@@ -71,12 +71,12 @@
     transition: all 0.2s ease-in-out;
 }
 
-    .custom-control:focus {
-        background-color: #ffffff;
-        border-color: #1a237e;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
-    }
+.custom-control:focus {
+    background-color: #ffffff;
+    border-color: #1a237e;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
+}
 
 /* --- Password Toggle Visibility --- */
 .pass-toggle {
@@ -89,9 +89,9 @@
     z-index: 10;
 }
 
-    .pass-toggle:hover {
-        color: #1a237e;
-    }
+.pass-toggle:hover {
+    color: #1a237e;
+}
 
 /* --- Buttons --- */
 .btn-login {
@@ -111,12 +111,12 @@
     margin-top: 15px;
 }
 
-    .btn-login:hover {
-        background-color: #0d47a1;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(26, 35, 126, 0.2);
-        color: #ffffff;
-    }
+.btn-login:hover {
+    background-color: #0d47a1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(26, 35, 126, 0.2);
+    color: #ffffff;
+}
 
 /* --- Links & Secondary Actions --- */
 .forgot-link {
@@ -126,10 +126,10 @@
     font-size: 0.9rem;
 }
 
-    .forgot-link:hover {
-        text-decoration: underline;
-        color: #00acc1;
-    }
+.forgot-link:hover {
+    text-decoration: underline;
+    color: #00acc1;
+}
 
 .create-account-text {
     margin-top: 25px;
@@ -137,11 +137,11 @@
     font-size: 0.95rem;
 }
 
-    .create-account-text a {
-        color: #00838f;
-        text-decoration: none;
-        font-weight: 700;
-    }
+.create-account-text a {
+    color: #00838f;
+    text-decoration: none;
+    font-weight: 700;
+}
 
 /* --- Register Footer Badges --- */
 .text-uppercase {
@@ -195,14 +195,14 @@
     position: relative;
 }
 
-    .custom-input-group i:not(.pass-toggle) {
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #888;
-        z-index: 5;
-    }
+.custom-input-group i:not(.pass-toggle) {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    z-index: 5;
+}
 
 .custom-control {
     width: 100%;
@@ -213,12 +213,12 @@
     transition: 0.3s;
 }
 
-    .custom-control:focus {
-        background-color: #fff;
-        border-color: #1a237e;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
-    }
+.custom-control:focus {
+    background-color: #fff;
+    border-color: #1a237e;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
+}
 
 /* Fix for Select dropdown arrow */
 select.custom-control {
@@ -228,21 +228,6 @@ select.custom-control {
     background-position: right 1rem center;
     background-size: 16px 12px;
 }
-
-.btn-login {
-    width: 100%;
-    background-color: #1a237e;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    transition: 0.3s;
-}
-
-    .btn-login:hover {
-        background-color: #007bff;
-        transform: translateY(-2px);
-    }
 
 .pass-toggle {
     position: absolute;

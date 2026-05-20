@@ -3,6 +3,7 @@
     ViewData["Title"] = "Service History";
 }
 
+
 <link rel="stylesheet" href="~/css/history.css?v=1.3" />
 
 <div class="history-bg py-5">
@@ -17,29 +18,62 @@
             </a>
         </div>
 
-        <div class="row g-4 mb-5 text-center animate__animated animate__fadeInUp">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #198754 !important; border-radius: 15px;">
-                    <i class="fas fa-check-double fa-2x text-success mb-3"></i>
-                    <h6 class="text-muted fw-bold small text-uppercase">Completed Jobs</h6>
-                    <h2 class="fw-bold text-dark">@ViewBag.CompletedCount.ToString("00")</h2>
+        <div class="row g-4 mb-5 animate__animated animate__fadeInUp">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 position-relative custom-stat-card">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="card-icon-wrap completed-icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
+                <span class="badge bg-soft-success rounded-pill px-2 py-1 small">+2 this month</span>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-bottom: 4px solid #1a237e !important; border-radius: 15px;">
-                    <i class="fas fa-spinner fa-2x text-primary mb-3"></i>
-                    <h6 class="text-muted fw-bold small text-uppercase">In Progress</h6>
-                    <h2 class="fw-bold text-dark">@ViewBag.InProgressCount.ToString("00")</h2>
+            <div class="mt-auto">
+                <h1 class="fw-bold text-dark display-5 mb-1">@ViewBag.CompletedCount.ToString("00")</h1>
+                <h6 class="text-muted fw-bold small text-uppercase tracking-wider m-0">Completed Jobs</h6>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 position-relative custom-stat-card">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="card-icon-wrap progress-icon">
+                    <i class="span-icon fas fa-clipboard-list"></i>
                 </div>
+                <span class="badge bg-soft-primary rounded-pill px-3 py-1 small">Active</span>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #00bcd4 !important; border-radius: 15px;">
-                    <i class="fas fa-wallet fa-2x text-info mb-3"></i>
-                    <h6 class="text-muted fw-bold small text-uppercase">Total Spent</h6>
-                    <h2 class="fw-bold text-dark">@(Model.Sum(r => r.FinalPrice ?? 0).ToString("C0"))</h2>
+            <div class="mt-auto">
+                <h1 class="fw-bold text-dark display-5 mb-1">@ViewBag.InProgressCount.ToString("00")</h1>
+                <h6 class="text-muted fw-bold small text-uppercase tracking-wider m-0">In Progress</h6>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4 h-100 text-white position-relative total-investment-card" style="background-color: #1a237e;">
+            <div class="card-watermark">
+                <i class="fas fa-wallet"></i>
+            </div>
+            
+            <div class="mb-2">
+                <h6 class="text-white-50 text-uppercase small tracking-wider m-0" style="font-weight: 600;">Total Investment</h6>
+            </div>
+            
+            <div class="my-2">
+                <h1 class="fw-bold display-4 mb-3">$@(Model.Sum(r => r.FinalPrice ?? 0).ToString("N2"))</h1>
+            </div>
+
+                <div class="mt-auto d-flex align-items-center gap-2 pt-2 border-top border-white-10">
+                    <div class="avatar-group d-flex align-items-center">
+                        <span class="avatar-sm rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center border border-2 border-primary" style="width:28px; height:28px; font-size:10px;">👨‍🔧</span>
+                        <span class="avatar-sm rounded-circle bg-info text-white fw-bold d-flex align-items-center justify-content-center border border-2 border-primary" style="width:28px; height:28px; font-size:10px; margin-left: -8px;">👩‍💻</span>
+                        <span class="avatar-sm rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center border border-2 border-primary" style="width:28px; height:28px; font-size:10px; margin-left: -8px;">👨‍🎨</span>
+                    </div>
+                    <span class="small text-white-50">Trusted by 12 Master Pros</span>
                 </div>
             </div>
         </div>
+    </div>
 
         <div class="card border-0 shadow-lg animate__animated animate__fadeInUp animate__delay-1s" style="border-radius: 20px;">
             <div class="card-header bg-white py-4 border-0 d-flex justify-content-between align-items-center">
@@ -134,37 +168,11 @@
     </div>
 </div>
 
-<style>
-    /* تحسين شكل السطر عند تمرير الماوس */
-    .clickable-row:hover {
-        background-color: rgba(26, 35, 126, 0.05) !important;
-        transition: background-color 0.2s ease-in-out;
-    }
 
-    .avatar-circle {
-        width: 40px;
-        height: 40px;
-        background-color: #e8eaf6;
-        color: #1a237e;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-weight: bold;
-        text-transform: uppercase;
-    }
-
-    /* الـ Border حق زرار التلت نقط */
-    .no-border {
-        border: none !important;
-        background: transparent;
-    }
-</style>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // كود الجافا سكريبت لتنفيذ الانتقال عند الضغط
             $(".clickable-row").click(function () {
                 window.location = $(this).data("url");
             });
