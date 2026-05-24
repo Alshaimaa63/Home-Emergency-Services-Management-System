@@ -76,7 +76,14 @@ namespace HomeServices.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitOffer(int RequestId, decimal Amount)
         {
-            // الحماية الأهم: منع تقديم العرض برمجياً
+            // 1. الحماية الجديدة: التأكد من السعر
+            if (Amount < 50)
+            {
+                TempData["Error"] = "Invalid offer amount. The minimum offer must be 50 EGP.";
+                return RedirectToAction("Details", "Requests", new { id = RequestId });
+            }
+
+            // 2. التأكد من توثيق الحساب (منع تقديم العرض برمجياً لو مش متوثق)
             var provider = await _userManager.GetUserAsync(User);
             if (provider != null && !provider.IsVerified)
             {
@@ -84,8 +91,10 @@ namespace HomeServices.Controllers
                 return RedirectToAction("Details", "Requests", new { id = RequestId });
             }
 
+            // 3. تحديد هوية المستخدم
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            // 4. التأكد إن الفني مقدمش عرض قبل كده لنفس الطلب
             var existingOffer = await _context.ServiceOffers
                 .FirstOrDefaultAsync(o => o.RequestId == RequestId && o.ServiceProviderId == userId);
 
@@ -95,6 +104,7 @@ namespace HomeServices.Controllers
                 return RedirectToAction("Details", "Requests", new { id = RequestId });
             }
 
+            // 5. إنشاء العرض الجديد
             var offer = new ServiceOffer
             {
                 RequestId = RequestId,
@@ -105,6 +115,7 @@ namespace HomeServices.Controllers
 
             _context.ServiceOffers.Add(offer);
 
+            // 6. إرسال إشعار للعميل
             var requestObj = await _context.Requests.FindAsync(RequestId);
             if (requestObj != null)
             {
