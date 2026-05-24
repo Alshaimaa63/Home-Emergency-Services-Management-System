@@ -7,8 +7,9 @@ namespace HomeServices.Models
     {
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Please enter an offer amount.")]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(50, int.MaxValue, ErrorMessage = "The minimum offer amount is 50 EGP.")]
         [Display(Name = "Offer Amount")]
         public decimal Amount { get; set; } // السعر اللي البروفيدر بيعرضه
 

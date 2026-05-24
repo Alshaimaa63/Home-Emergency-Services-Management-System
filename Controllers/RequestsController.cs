@@ -71,6 +71,12 @@ namespace HomeServices.Controllers
                 ModelState.Remove("Customer");
                 ModelState.Remove("Category");
 
+                // 🔥 خط الدفاع الجديد: التأكد أن التاريخ المختار مش في الماضي 🔥
+                if (request.PreferredSchedule < DateTime.Now)
+                {
+                    ModelState.AddModelError("PreferredSchedule", "Please select a valid date and time in the future.");
+                }
+
                 if (ModelState.IsValid)
                 {
                     _context.Add(request);
@@ -228,7 +234,6 @@ namespace HomeServices.Controllers
 
             return RedirectToAction("Dashboard", "Provider");
         }
-
         // ==========================================
         // 6. عمليات إضافية (تعديل وإلغاء)
         // ==========================================
@@ -256,6 +261,12 @@ namespace HomeServices.Controllers
             ModelState.Remove("Provider");
             ModelState.Remove("CustomerId");
 
+            // 🔥 التعديل الأول هنا: منع اختيار تاريخ قديم أثناء التعديل 🔥
+            if (request.PreferredSchedule < DateTime.Now)
+            {
+                ModelState.AddModelError("PreferredSchedule", "Please select a valid date and time in the future.");
+            }
+
             if (ModelState.IsValid)
             {
                 var existingRequest = await _context.Requests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
@@ -267,6 +278,10 @@ namespace HomeServices.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            // 🔥 التعديل الثاني هنا: إعادة إرسال الأقسام عشان الصفحة متضربش إيرور لو التاريخ كان غلط 🔥
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", request.CategoryId);
+
             return View(request);
         }
 
