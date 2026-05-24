@@ -58,10 +58,11 @@
                                 <label asp-for="PreferredSchedule" class="form-label fw-bold text-muted small text-uppercase">Preferred Date & Time</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-0"><i class="fas fa-calendar-alt text-primary"></i></span>
-                                    <input asp-for="PreferredSchedule" class="form-control border-0 bg-light shadow-none py-3" type="datetime-local" />
+                                    <input asp-for="PreferredSchedule" class="form-control border-0 bg-light shadow-none py-3" type="datetime-local" min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
                                 </div>
                                 <span asp-validation-for="PreferredSchedule" class="text-danger small"></span>
                             </div>
+
 
                             <!-- Submit Button -->
                             <div class="d-grid mt-5">
